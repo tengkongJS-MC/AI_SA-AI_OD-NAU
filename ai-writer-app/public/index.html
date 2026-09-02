@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>智农团委 · AI 写作助手</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">◆</span>
+      <div class="brand-txt">
+        <h1>AI Organization Department | AI 组织部</h1>
+        <p>策划案 · QQ推送 · 微信推送 智能写作助手</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span id="chipModel" class="chip model hidden"></span>
+      <span id="connStatus" class="chip ok">● 服务连接中…</span>
+      <button id="btnSettings" class="btn ghost">⚙ 模型设置</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- 左侧：模式与信息 -->
+    <aside class="left">
+      <nav class="mode-tabs" id="modeTabs"></nav>
+
+      <div class="card">
+        <div class="card-h">
+          <h2 class="card-title">活动 / 需求信息</h2>
+          <button id="btnImportWord" class="btn ghost mini">📄 导入Word</button>
+          <input type="file" id="fileWord" accept=".docx" hidden />
+        </div>
+        <div id="modeFields"></div>
+        <div class="field">
+          <label>补充说明（可选）</label>
+          <textarea id="extraNote" rows="3" placeholder="可补充特殊要求、语气侧重、需默认补全的信息等…"></textarea>
+        </div>
+        <div id="importBox" class="import-box hidden">
+          <div class="import-head">
+            <span class="import-label">📄 已导入策划案（撰写推送时将作为依据）</span>
+            <button id="btnClearImport" class="btn ghost mini">清除</button>
+          </div>
+          <textarea id="importText" rows="5" placeholder="导入的 .docx 策划案全文会显示在这里，可编辑、可删除后重写。"></textarea>
+          <div class="micro-note">切换右侧为"纯文本"视图可直接复制无 Markdown 符号的正文用于推送编辑器。</div>
+        </div>
+        <div class="actions">
+          <button id="btnGenerate" class="btn primary grow">✦ 生成全文</button>
+          <button id="btnReviseAll" class="btn">整体润色</button>
+          <button id="btnCheck" class="btn accent hidden" style="flex-basis:100%">📋 填写待确认清单并出定稿</button>
+          <button id="btnPic" class="btn accent hidden" style="flex-basis:100%">🖼 为当前文案生成配图提示词</button>
+        </div>
+        <p class="hint">在右侧<b class="hl">选中一段文字</b>会弹出修改条，可对该段提意见；<b class="hl">Ctrl + Enter</b> 快速生成。</p>
+      </div>
+    </aside>
+
+    <!-- 中间：编辑区 -->
+    <section class="work">
+      <div class="editor-card">
+        <div class="editor-head">
+          <div class="seg" id="viewSeg">
+            <button class="seg-btn active" data-view="edit">编辑</button>
+            <button class="seg-btn" data-view="preview">预览</button>
+            <button class="seg-btn" data-view="plain">纯文本</button>
+          </div>
+          <div class="editor-tools">
+            <button id="btnSaveNow" class="btn mini">💾 保存</button>
+            <button id="btnCopy" class="btn mini">复制</button>
+            <button id="btnCopyPlain" class="btn mini" title="复制无 Markdown 符号的纯文本">复制纯文本</button>
+            <button id="btnExportMd" class="btn mini">.md</button>
+            <button id="btnExportTxt" class="btn mini">.txt</button>
+            <button id="btnExportDocx" class="btn mini">Word</button>
+            <button id="btnClear" class="btn mini danger">清空</button>
+          </div>
+        </div>
+
+        <div id="editPane" class="pane">
+          <textarea id="editor" spellcheck="false"
+            placeholder="生成的内容将出现在这里，可直接编辑；可切换预览 / 纯文本视图。"></textarea>
+        </div>
+        <div id="previewPane" class="pane hidden">
+          <article id="preview" class="markdown-body"></article>
+        </div>
+        <div id="plainPane" class="pane hidden">
+          <textarea id="plainOut" readonly spellcheck="false"
+            placeholder="无 Markdown 符号的纯文本，可直接复制到 QQ/公众号编辑器。"></textarea>
+        </div>
+
+        <div id="reviseBar" class="revise-bar hidden">
+          <span class="rb-tag">✎ 已选中</span>
+          <input id="reviseInput" type="text" placeholder="输入对该段的修改意见，如：语气更热血 / 补充活动意义" />
+          <button id="btnReviseSel" class="btn small primary">应用</button>
+          <button id="btnReviseCancel" class="btn small ghost">取消</button>
+        </div>
+        <div id="streamingTip" class="streaming hidden">正在生成… <span id="streamingSpinner"></span></div>
+      </div>
+    </section>
+
+    <!-- 右侧：我的存档（窄栏） -->
+    <aside class="right-rail">
+      <div class="card">
+        <div class="card-h">
+          <h2 class="card-title">💾 我的存档</h2>
+          <button id="btnSaveCurrent" class="btn primary mini">＋ 保存当前</button>
+          <button id="btnClearLib" class="btn ghost mini">清空</button>
+        </div>
+        <p class="empty" id="libEmpty">暂无存档。生成后可点"保存当前"为这份写作命名保存。</p>
+        <ul id="libList"></ul>
+      </div>
+    </aside>
+  </main>
+
+  <!-- 模型设置 -->
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-card">
+      <h2>模型设置</h2>
+      <p class="modal-sub">选择提供商并填写 API Key。GLM-4.7-Flash 为智谱免费模型；DeepSeek 现为 deepseek-v4-flash。</p>
+      <div class="field"><label>启用提供商</label><select id="cfgActive"></select></div>
+      <div id="providersContainer"></div>
+      <div class="modal-actions">
+        <button id="btnSaveCfg" class="btn primary">保存配置</button>
+        <button id="btnTestCfg" class="btn">测试连接</button>
+        <button id="btnCloseCfg" class="btn ghost">关闭</button>
+      </div>
+      <p class="micro-note">API Key 仅保存在本机 data/config.json，不会上传到其它服务。</p>
+    </div>
+  </div>
+
+  <!-- 保存到存档 -->
+  <div id="saveModal" class="modal hidden">
+    <div class="modal-card small">
+      <h2>保存到我的存档</h2>
+      <div class="field">
+        <label>存档标题</label>
+        <input id="saveTitle" type="text" placeholder="如：2026 迎新晚会 QQ 推送（定稿）" />
+      </div>
+      <div class="field">
+        <label>备注（可选）</label>
+        <input id="saveMemo" type="text" placeholder="可记录版本、用途等" />
+      </div>
+      <div class="modal-actions">
+        <button id="btnSaveOk" class="btn primary">保存</button>
+        <button id="btnSaveCancel" class="btn ghost">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 待确认清单填写 -->
+  <div id="checkModal" class="modal hidden">
+    <div class="modal-card wide">
+      <h2>填写待确认清单</h2>
+      <p class="modal-sub">请逐项填写草稿末尾"待确认清单"里那些需要你确认的信息。已填项会回填进正文并去除对应占位；留空项仍会保留为待确认。</p>
+      <div id="checkItems" class="check-items"></div>
+      <div class="modal-actions">
+        <button id="btnCheckOk" class="btn primary">✦ 据此生成定稿</button>
+        <button id="btnCheckCancel" class="btn ghost">取消</button>
+      </div>
+      <p id="checkNotice" class="micro-note"></p>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>

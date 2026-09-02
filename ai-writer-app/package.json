@@ -1,0 +1,17 @@
+{
+  "name": "nau-org-writer-app",
+  "version": "1.0.0",
+  "description": "南京农业大学智慧农业学院（人工智能学院）团委写作助手：策划案 / QQ空间推送(含配图提示词) / 微信公众号推送",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "docx": "^9.7.1",
+    "express": "^4.22.2",
+    "mammoth": "^1.12.2"
+  }
+}
