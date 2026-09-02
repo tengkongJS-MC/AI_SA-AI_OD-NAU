@@ -1,6 +1,6 @@
 # 智农AI组织部 · AI Organization Department
 
-面向 **南京农业大学智慧农业学院（人工智能学院）团委** 的一体化写作前端/后端工程。它把四个既有 skill（`plan_skill` 策划案、`QQ_push_skill_v2` QQ 空间推送、`push_pic_skill` 配图提示词、`wechat_push_skill` 微信公众号推送）的提示词工程固化为后端系统提示词，通过大模型 API 完成文案撰写，并提供网页编辑器供二次修改、选中文字定向修改与文本导出。
+面向南京农业大学智慧农业学院（人工智能学院）团委组织部的一体化写作前端/后端工程。它把四个既有 skill（`plan_skill` 策划案、`QQ_push_skill_v2` QQ 空间推送、`push_pic_skill` 配图提示词、`wechat_push_skill` 微信公众号推送）的提示词工程固化为后端系统提示词，通过大模型 API 完成文案撰写，并提供网页编辑器供二次修改、选中文字定向修改与文本导出。
 
 ## 功能
 
