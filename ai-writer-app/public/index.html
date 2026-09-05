@@ -12,12 +12,19 @@
       <span class="brand-mark">◆</span>
       <div class="brand-txt">
         <h1>AI Organization Department | AI 组织部</h1>
-        <p>策划案 · QQ推送 · 微信推送 智能写作助手</p>
+        <p>【团委组织部】一站式工作平台</p>
       </div>
     </div>
     <div class="top-actions">
       <span id="chipModel" class="chip model hidden"></span>
       <span id="connStatus" class="chip ok">● 服务连接中…</span>
+      <select id="themeSel" class="theme-sel" title="界面主题">
+        <option value="red">经典红</option>
+        <option value="blue">浅蓝</option>
+        <option value="green">浅绿</option>
+        <option value="yellow">浅黄</option>
+        <option value="dark">深色</option>
+      </select>
       <button id="btnSettings" class="btn ghost">⚙ 模型设置</button>
     </div>
   </header>
@@ -28,10 +35,13 @@
       <nav class="mode-tabs" id="modeTabs"></nav>
 
       <div class="card">
-        <div class="card-h">
+        <div class="head-block">
           <h2 class="card-title">活动 / 需求信息</h2>
-          <button id="btnImportWord" class="btn ghost mini">📄 导入Word</button>
-          <input type="file" id="fileWord" accept=".docx" hidden />
+          <div class="import-btns">
+            <button id="btnLoadPlanArchive" class="btn ghost mini">📂 从存档加载策划</button>
+            <button id="btnImportWord" class="btn ghost mini">📄 导入策划案</button>
+            <input type="file" id="fileWord" accept=".docx" hidden />
+          </div>
         </div>
         <div id="modeFields"></div>
         <div class="field">
@@ -40,7 +50,7 @@
         </div>
         <div id="importBox" class="import-box hidden">
           <div class="import-head">
-            <span class="import-label">📄 已导入策划案（撰写推送时将作为依据）</span>
+            <span class="import-label">📄 已导入策划案（生成时将作为依据）</span>
             <button id="btnClearImport" class="btn ghost mini">清除</button>
           </div>
           <textarea id="importText" rows="5" placeholder="导入的 .docx 策划案全文会显示在这里，可编辑、可删除后重写。"></textarea>
@@ -128,6 +138,84 @@
     </div>
   </div>
 
+  <!-- 配图参数设置（生成配图提示词前可选） -->
+  <div id="picModal" class="modal hidden">
+    <div class="modal-card">
+      <h2>配图参数</h2>
+      <p class="modal-sub">生成图片提示词前先选定参数；未选定的项将由模型按部门风格与用途自动推断并标注。</p>
+      <div class="grid2">
+        <div class="field"><label>图片比例</label>
+          <select id="picRatio">
+            <option value="">按平台推荐（默认）</option>
+            <option value="16:9 横版">16:9 横版</option>
+            <option value="9:16 竖版">9:16 竖版</option>
+            <option value="1:1 方形">1:1 方形</option>
+            <option value="3:4">3:4</option>
+            <option value="4:5">4:5</option>
+            <option value="1.91:1">1.91:1</option>
+          </select>
+        </div>
+        <div class="field"><label>图片数量</label>
+          <select id="picCount">
+            <option value="">默认（主图 1 张 + 3 张辅助）</option>
+            <option value="仅主图 1 张">仅主图 1 张</option>
+            <option value="主图 + 1 辅助">主图 + 1 张辅助</option>
+            <option value="主图 + 2 辅助">主图 + 2 张辅助</option>
+            <option value="主图 + 3 辅助">主图 + 3 张辅助</option>
+            <option value="主图 + 4 辅助">主图 + 4 张辅助</option>
+          </select>
+        </div>
+        <div class="field"><label>图片风格</label>
+          <select id="picStyle">
+            <option value="">按部门风格推荐（默认）</option>
+            <option value="写实摄影">写实摄影</option>
+            <option value="扁平插画">扁平插画</option>
+            <option value="国潮">国潮</option>
+            <option value="科技赛博">科技赛博</option>
+            <option value="水彩">水彩</option>
+            <option value="3D 卡通">3D 卡通</option>
+            <option value="手绘粉笔">手绘粉笔</option>
+            <option value="剪影极简">剪影极简</option>
+          </select>
+        </div>
+        <div class="field"><label>用途 / 平台</label>
+          <select id="picUse">
+            <option value="">跟随当前推送</option>
+            <option value="QQ 空间">QQ 空间</option>
+            <option value="微信公众号">微信公众号</option>
+            <option value="海报">海报</option>
+            <option value="短视频封面">短视频封面</option>
+          </select>
+        </div>
+        <div class="field"><label>主图是否含主题文字</label>
+          <select id="picText">
+            <option value="">默认（主图含活动主题大字）</option>
+            <option value="主图含主题大字">主图含主题大字</option>
+            <option value="主图不含文字">主图不含文字</option>
+          </select>
+        </div>
+        <div class="field"><label>色彩倾向</label>
+          <select id="picColor">
+            <option value="">按部门风格配色（默认）</option>
+            <option value="暖色系">暖色系</option>
+            <option value="冷色系">冷色系</option>
+            <option value="明亮高饱和">明亮高饱和</option>
+            <option value="沉稳低饱和">沉稳低饱和</option>
+          </select>
+        </div>
+      </div>
+      <div class="field full">
+        <label>主图主题文字（如需生成，如"迎新杯篮球赛"）</label>
+        <input id="picTheme" type="text" placeholder="留空则模型从文案中提取活动主题" />
+      </div>
+      <div class="modal-actions">
+        <button id="btnPicGo" class="btn primary">✦ 按此参数生成配图提示词</button>
+        <button id="btnPicCancel" class="btn ghost">取消</button>
+      </div>
+      <p class="micro-note">选择不同的比例/数量/风格会直接影响生成的提示词；生成后仍可再次修改重生成。</p>
+    </div>
+  </div>
+
   <!-- 保存到存档 -->
   <div id="saveModal" class="modal hidden">
     <div class="modal-card small">
@@ -162,6 +250,19 @@
   </div>
 
   <div id="toast" class="toast"></div>
+
+  <!-- 从存档加载策划 -->
+  <div id="planModal" class="modal hidden">
+    <div class="modal-card">
+      <h2>从存档加载策划</h2>
+      <p class="modal-sub">选择一份已保存的策划案，将其作为推送撰写的依据载入下方「已导入策划案」。</p>
+      <p id="planEmpty" class="empty hidden">暂无策划案存档。</p>
+      <ul id="planList"></ul>
+      <div class="modal-actions">
+        <button id="btnPlanCancel" class="btn ghost">关闭</button>
+      </div>
+    </div>
+  </div>
   <script src="app.js"></script>
 </body>
 </html>
