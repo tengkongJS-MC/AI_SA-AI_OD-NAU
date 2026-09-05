@@ -368,6 +368,34 @@ app.post('/api/chat', async (req, res) => {
 
 const PORT = process.env.PORT || 5503;
 app.listen(PORT, () => {
-  console.log(`AI 写作助手已启动：http://127.0.0.1:${PORT}`);
-  console.log(`技能根目录：${path.join(__dirname, '..', '..')}`);
+  const url = `http://127.0.0.1:${PORT}`;
+  const root = path.join(__dirname, '..', '..');
+  const tty = !!process.stdout.isTTY;
+  const c = (s, code) => (tty ? `\x1b[${code}m${s}\x1b[0m` : s);
+  const bold = (s) => c(s, '1');
+  const green = (s) => c(s, '32'), yellow = (s) => c(s, '33');
+  const blue = (s) => c(s, '34'), magenta = (s) => c(s, '35'), cyan = (s) => c(s, '36');
+  const line = (tty ? '━' : '=').repeat(56);
+  let provider = '';
+  try {
+    const cfg = configStore.loadConfig();
+    const p = cfg && cfg.providers && cfg.providers[cfg.active];
+    provider = p ? p.label : '';
+  } catch (e) { /* 忽略配置读取失败 */ }
+  const out = [
+    '',
+    '  ' + magenta('◆') + '  ' + bold('智农 · AI 组织部 写作助手') + '  ' + yellow('v1.1'),
+    '  ' + line,
+    '  ' + green('🚀 服务已启动：') + cyan(bold(url)),
+    '  ' + yellow('📁 技能根目录：') + root,
+    '',
+    '  ' + blue('📋 功能一览'),
+    '  ' + '    ' + ['🧭 策划案', '💬 QQ 推送', '📱 微信推送', '⏱ 学时申请/认定'].join('   ·   '),
+    '  ' + '    ' + ['🖼 配图提示词', '✍️ 选中改写', '🗂 我的存档', '🎨 多主题', '📄 Word 公文导出'].join('   ·   '),
+    '',
+    '  ' + blue('🔑 当前模型：') + (provider || yellow('未配置（点右上角 ⚙ 模型设置填写 API Key）')),
+    '  ' + yellow('💡 提示：') + '在浏览器打开上方地址，开始你的智能写作。',
+    ''
+  ];
+  console.log(out.join('\n'));
 });
