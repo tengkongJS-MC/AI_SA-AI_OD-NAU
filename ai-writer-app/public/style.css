@@ -35,6 +35,8 @@
   --topbar: rgba(255, 255, 255, .80);
   --accent-border: #f5d0cc;
   --accent-hover: #fdd7d3;
+  --sb: #dcc4bf;
+  --sb-hover: #c7a9a2;
 }
 
 * { box-sizing: border-box; }
@@ -299,8 +301,8 @@ select { cursor: pointer; background-image: none; }
 /* ---------------- scrollbar ---------------- */
 ::-webkit-scrollbar { width: 9px; height: 9px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #dcc4bf; border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
-::-webkit-scrollbar-thumb:hover { background: #c7a9a2; background-clip: content-box; }
+::-webkit-scrollbar-thumb { background: var(--sb); border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--sb-hover); background-clip: content-box; }
 
 /* ---------------- import box ---------------- */
 .import-box { border: 1px dashed var(--line-strong); border-radius: 9px; padding: 8px 9px; background: var(--card-soft); margin-bottom: 10px; }
@@ -401,7 +403,10 @@ html[data-theme="dark"] {
   --surface: #1c2027; --topbar: rgba(18, 21, 26, .86);
 }
 html[data-theme="dark"] .modal { background: rgba(0, 0, 0, .55); }
-html[data-theme="dark"] ::-webkit-scrollbar-thumb { background: #3b4552; }
+html[data-theme="blue"] { --sb: #b8cbe9; --sb-hover: #9cb5d4; }
+html[data-theme="green"] { --sb: #bfe0cb; --sb-hover: #a6ccb5; }
+html[data-theme="yellow"] { --sb: #e6d0ab; --sb-hover: #d5bc8f; }
+html[data-theme="dark"] { --sb: #3b4552; --sb-hover: #4f5c6d; }
 
 /* 从存档加载策划 列表 */
 #planList { list-style: none; margin: 0; padding: 0; max-height: 52vh; overflow-y: auto; }
