@@ -2,9 +2,13 @@ const fs = require('fs');
 const path = require('path');
 
 // 技能根目录：本项目位于 ai_writer/ai-writer-app，技能仓库在 ai_writer 下
-const SKILL_ROOT = path.join(__dirname, '..', '..');
+// （桌面版 sidecar 可用 AI_WRITER_ROOT 指定 skill 所在目录）
+const SKILL_ROOT = process.env.AI_WRITER_ROOT || path.join(__dirname, '..', '..');
 
 function read(file) {
+  // 单文件桌面版：技能 md 已内嵌进可执行文件
+  const embedded = global.__AI_WRITER_ASSETS__;
+  if (embedded && Object.prototype.hasOwnProperty.call(embedded, file)) return embedded[file];
   const full = path.join(SKILL_ROOT, file);
   try {
     return fs.readFileSync(full, 'utf8');

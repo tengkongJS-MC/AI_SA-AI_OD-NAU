@@ -1,3 +1,13 @@
+// 桌面版（sidecar）可用命令行参数/环境变量指定资源位置；不传时沿用仓库相对结构。
+(function () {
+  const args = process.argv.slice(2);
+  const arg = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : null; };
+  const root = arg('--root'); if (root) process.env.AI_WRITER_ROOT = root;
+  const pub = arg('--public'); if (pub) process.env.AI_WRITER_PUBLIC = pub;
+  const data = arg('--data'); if (data) process.env.AI_WRITER_DATA = data;
+  const port = arg('--port'); if (port) process.env.PORT = port;
+})();
+
 const express = require('express');
 const path = require('path');
 const mammoth = require('mammoth');
@@ -10,7 +20,28 @@ const app = express();
 app.use(express.json({ limit: '2mb' }));
 app.use(express.raw({ type: ['application/octet-stream', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'], limit: '25mb' }));
 
-const PUBLIC_DIR = path.join(__dirname, '..', 'public');
+const PUBLIC_DIR = process.env.AI_WRITER_PUBLIC || path.join(__dirname, '..', 'public');
+// 单文件桌面版：前端静态文件已内嵌，直接由内存提供（不依赖磁盘）
+const EMBEDDED = global.__AI_WRITER_ASSETS__ || null;
+const MIME = {
+  '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif', '.webp': 'image/webp', '.ico': 'image/x-icon', '.woff2': 'font/woff2'
+};
+if (EMBEDDED) {
+  app.use((req, res, next) => {
+    if (req.method !== 'GET' || req.path.startsWith('/api/')) return next();
+    let rel = decodeURIComponent(req.path);
+    if (rel === '/' || rel === '') rel = '/index.html';
+    const key = 'public' + rel;
+    if (Object.prototype.hasOwnProperty.call(EMBEDDED, key)) {
+      res.setHeader('Content-Type', MIME[path.extname(rel).toLowerCase()] || 'application/octet-stream');
+      return res.send(EMBEDDED[key]);
+    }
+    return next();
+  });
+}
 app.use(express.static(PUBLIC_DIR));
 
 // ---------- 配置接口 ----------
@@ -366,11 +397,11 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5503;
-app.listen(PORT, () => {
-  const url = `http://127.0.0.1:${PORT}`;
-  const root = path.join(__dirname, '..', '..');
-  const tty = !!process.stdout.isTTY;
+// =========================================================================
+// 启动：支持端口自动顺延（桌面版重复启动时更友好）
+// =========================================================================
+function banner(url, root) {
+  const tty = !!(process.stdout && process.stdout.isTTY);
   const c = (s, code) => (tty ? `\x1b[${code}m${s}\x1b[0m` : s);
   const bold = (s) => c(s, '1');
   const green = (s) => c(s, '32'), yellow = (s) => c(s, '33');
@@ -397,5 +428,56 @@ app.listen(PORT, () => {
     '  ' + yellow('💡 提示：') + '在浏览器打开上方地址，开始你的智能写作。',
     ''
   ];
-  console.log(out.join('\n'));
-});
+  try { console.log(out.join('\n')); } catch (e) { /* GUI 子系统下无控制台，忽略 */ }
+}
+
+// 桌面版：服务就绪后打开一个 Edge/WebView2 应用窗口，窗口关闭即退出程序
+function openDesktopWindow(url) {
+  const { spawn } = require('child_process');
+  const fs = require('fs');
+  const os = require('os');
+  const dataDir = (() => { try { return require('./config').dataDir(); } catch (e) { return path.join(os.tmpdir(), 'AI-Writer-Desktop'); } })();
+  const profile = path.join(dataDir, 'edge-profile');
+  try { fs.mkdirSync(profile, { recursive: true }); } catch (e) {}
+  const candidates = [
+    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
+  ];
+  const edge = candidates.find((p) => { try { return fs.existsSync(p); } catch (e) { return false; } });
+  if (!edge) { // 找不到 Edge：退回系统默认浏览器，服务保持运行
+    try { spawn('cmd', ['/c', 'start', '', url], { detached: true, stdio: 'ignore' }).unref(); } catch (e) {}
+    return;
+  }
+  const child = spawn(edge, [
+    '--app=' + url,
+    '--user-data-dir=' + profile,
+    '--no-first-run',
+    '--no-default-browser-check'
+  ], { stdio: 'ignore' });
+  child.on('exit', () => process.exit(0));
+  child.on('error', () => process.exit(0));
+}
+
+const DESKTOP = process.env.AI_WRITER_DESKTOP === '1';
+const NO_WINDOW = process.env.AI_WRITER_NO_WINDOW === '1';
+const BASE_PORT = Number(process.env.PORT) || 5503;
+
+function startServer(port, attempt) {
+  const server = app.listen(port, () => {
+    const url = `http://127.0.0.1:${port}`;
+    if (process.env.AI_WRITER_ROOT) banner(url, process.env.AI_WRITER_ROOT);
+    else banner(url, path.join(__dirname, '..', '..'));
+    if (DESKTOP && !NO_WINDOW) openDesktopWindow(url);
+  });
+  server.on('error', (err) => {
+    if (err && err.code === 'EADDRINUSE' && attempt < 10) {
+      try { console.log(`端口 ${port} 被占用，尝试 ${port + 1} …`); } catch (e) {}
+      startServer(port + 1, attempt + 1);
+    } else {
+      try { console.error('启动失败：' + err.message); } catch (e) {}
+      process.exit(1);
+    }
+  });
+  return server;
+}
+startServer(BASE_PORT, 0);
