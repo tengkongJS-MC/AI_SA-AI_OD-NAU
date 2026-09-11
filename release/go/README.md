@@ -1,19 +1,18 @@
 # Go 版桌面应用（`release/go`）
 
-把原来的 Node/Express 后端用 **Go 重写**，前端与技能文件用 `go:embed` 内嵌，
-编译出**一个几 MB 的 exe**：不需要 Node、不需要 Rust、不需要 Visual Studio。
+后端用 **Go 重写**，前端与技能文件用 `go:embed` 内嵌，
+编译出**一个几 MB 的 exe**：不需要 Rust、不需要 Visual Studio，也不需要目标机器额外装运行时。
 
 > ✅ **本目录已包含构建好的成品**：`release/go/AI-Writer-Go.exe`（**8.4 MB**，WebView2 原生窗口版）。
 > 已验证：内嵌前端正常、5 个技能正常加载、配置读写正常、Word 导出→回导往返正常（含预算表格，且待确认清单不导出）。
 > 窗口默认 **16:10、1440×900**（按 DPI 缩放，最小 1024×640），详见第「窗口大小」一节。
 
-## 体积对比
+## 构建方式与体积
 
-| 方案 | 体积 | 需要装什么 |
+| 构建方式 | 体积 | 需要装什么 |
 |---|---|---|
-| Node SEA 单文件（`release/node-93mb/`） | 92.6 MB | 无（但内含 Node 运行时） |
-| **本方案 · 默认构建**（Edge 应用模式窗口） | **≈ 3–4 MB** | 只装 Go |
-| **本方案 · `-tags webview2`**（原生 WebView2 窗口） | **≈ 8.4 MB**（已构建） | 装 Go + `go get` 一个库 |
+| **默认构建**（Edge 应用模式窗口） | **≈ 3–4 MB** | 只装 Go |
+| **`-tags webview2`**（原生 WebView2 窗口，当前成品） | **≈ 8.4 MB** | 装 Go + `go get` 一个库 |
 
 ## 一、环境准备（只有一步）
 
@@ -47,10 +46,10 @@ go build -tags webview2 -ldflags "-H windowsgui -s -w" -o AI-Writer-Go.exe .
 
 ```
 release/go/
-├─ AI-Writer-Go.exe           ★ 已构建成品（8.32 MB，webview2 版）
+├─ AI-Writer-Go.exe           ★ 已构建成品（8.4 MB，webview2 版）
 ├─ go.mod / go.sum            module aiwriter
 ├─ main.go                    入口：起服务 → 开窗口 → 关窗退出
-├─ server.go                  HTTP 服务（与 Node 版 API 完全一致）
+├─ server.go                  HTTP 服务（与网页版 API 完全一致）
 ├─ skills.go                  按功能拼装系统提示词（含排版/列表约束）
 ├─ llm.go                     OpenAI 兼容流式调用（手写 SSE 解析）
 ├─ docx.go                    .docx 导出（公文排版/封面/预算真实表格）与导入
@@ -94,7 +93,7 @@ go build -tags webview2 -ldflags "-H windowsgui -s -w" -o AI-Writer-Go.exe .
 > 窗口图标：`go-winres` 生成的 `rsrc_windows_amd64.syso` 已把 `logo.png` 写进 exe；
 > `runwindow_webview2.go` 里 `iconResID = 1` 用于标题栏图标，若标题栏没显示可改成 2 或 3。
 
-## 四、API 与 Node 版一致
+## 四、API 与网页版一致
 
 | 接口 | 说明 |
 |---|---|

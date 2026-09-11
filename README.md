@@ -57,54 +57,42 @@ npm start
 
 打开浏览器访问：http://127.0.0.1:5503
 
-## 桌面版（Windows，免安装）
+## 桌面版Release（Windows）
 
-桌面端成品统一放在 **`release/`** 下，两个版本功能完全相同，按体积/需求取用：
+桌面端成品放在 **`release/go/`**，单个 exe、双击即用：
 
 ```
-release/
-├─ README.md            两版本对比与使用/构建说明
-├─ go/                  ★ 推荐：Go 版，单个 8.32 MB exe（WebView2 原生窗口）
-│   ├─ AI-Writer-Go.exe      ← 已构建成品
-│   └─ …Go 源码、assets/（内嵌资源）、sync-assets.ps1、README.md
-└─ node-93mb/           Node 版，单个 92.6 MB exe（内含 Node 运行时，什么都不用装）
-    ├─ AI-Writer-Desktop.exe
-    └─ 使用说明.txt
+release/go/
+├─ AI-Writer-Go.exe      ★ 已构建成品：8.4 MB（WebView2 原生窗口）
+├─ …Go 源码（main.go / server.go / skills.go / llm.go / docx.go / config.go / windowsize.go 等）
+├─ assets/               内嵌资源（前端 public + 5 个 skill 的 md）
+├─ logo.png / rsrc_*.syso 图标源图与 go-winres 生成的资源
+├─ sync-assets.ps1       改了前端/技能后同步内嵌资源
+└─ README.md             详细说明（构建、窗口大小、注意事项）
 ```
 
-| | `release/go/AI-Writer-Go.exe` | `release/node-93mb/AI-Writer-Desktop.exe` |
-|---|---|---|
-| 体积 | **8.32 MB** | 92.6 MB |
-| 窗口 | WebView2 原生窗口（嵌入窗口、无浏览器外壳） | Edge 应用模式窗口（无地址栏） |
-| 免装运行时 | ✅（Go 已编进 exe） | ✅（Node 已编进 exe） |
-| 需要系统组件 | WebView2 运行时（Win10/11 自带） | Edge / WebView2（自带） |
-
-直接双击对应 exe 即可使用：程序在 `127.0.0.1:5503` 起本地服务（被占用自动顺延）并弹出应用窗口，
-首次使用点右上角 **⚙ 模型设置** 填 API Key，关闭窗口即退出；配置存于 `%APPDATA%\AI-Writer-Desktop\config.json`。
-exe 未做代码签名，SmartScreen 可能提示（“更多信息 → 仍要运行”）。
+- 体积 **8.4 MB**：WebView2 原生窗口（嵌入窗口、无浏览器外壳），Go 运行时已编进 exe，**免装运行时**；
+- 需要系统组件：WebView2 运行时（Win10/11 一般自带）；
+- 直接双击 `AI-Writer-Go.exe`：程序在 `127.0.0.1:5503` 起本地服务（被占用自动顺延）并弹出窗口，
+  默认窗口 **16:10、1440×900**（按 DPI 缩放，最小 1024×640）；
+- 首次使用点右上角 **⚙ 模型设置** 填 API Key；配置存于 `%APPDATA%\AI-Writer-Desktop\config.json`；
+- exe 未做代码签名，SmartScreen 可能提示（“更多信息 → 仍要运行”）。
 
 ### 重新构建
 
-**Go 版（推荐，只需装 Go，无需 Visual Studio）**：
+只需安装 **Go ≥ 1.22**（<https://go.dev/dl/>，无需 Visual Studio / Rust）：
+
 ```powershell
 cd release\go
-go build -tags webview2 -ldflags "-H windowsgui -s -w" -o AI-Writer-Go.exe .   # 原生 WebView2 窗口（8.3 MB）
+go build -tags webview2 -ldflags "-H windowsgui -s -w" -o AI-Writer-Go.exe .   # 原生 WebView2 窗口（≈8.4 MB）
 # 或默认构建（Edge 应用窗口，约 3–4 MB）：
 # go build -ldflags "-H windowsgui -s -w" -o AI-Writer-Go.exe .
 ```
 
-**Node 版（只需 Node）**：
-```bash
-cd desktop
-npm install --ignore-scripts     # esbuild 的二进制来自可选依赖，无需 postinstall
-npm run build:exe               # 产物：release/node-93mb/AI-Writer-Desktop.exe
-```
-构建链路（`desktop/build-exe.mjs`）：esbuild 打包服务端为单文件 → 内嵌 `public/` 与技能 md → Node SEA 生成单文件应用负载 → `postject` 注入到 `node.exe` → 将 PE 子系统改为 GUI（双击不弹控制台窗口）。
+> 由于前端与技能内容是**打包时内嵌**的，修改 `ai-writer-app/public/` 或任一 skill 之后，
+> 需先执行 `release\go\sync-assets.ps1` 重新同步，再重新编译。
 
-> 由于前端与技能内容是**打包时内嵌**的，修改 `ai-writer-app/public/` 或任一 skill 之后需重新构建：
-> Go 版先执行 `release\go\sync-assets.ps1` 再编译，Node 版重跑 `npm run build:exe`。
-
-> Go 版后端用纯 Go 重写（`release/go/`），**API 与 Node 版完全一致**，现有前端无需改动；
+> Go 版后端用纯 Go 重写（`release/go/`），**API 与网页版完全一致**，现有前端无需改动；
 > 已实测：内嵌前端 200、5 个技能正常加载、配置读写正常、Word 导出↔回导往返完整（含预算真实表格，且待确认清单不导出）。
 
 ## 使用步骤
@@ -150,22 +138,26 @@ npm run build:exe               # 产物：release/node-93mb/AI-Writer-Desktop.e
 
 ### v1.2（2026/09/11）—— 桌面端打包
 
-- **新增桌面端打包（两种版本，统一放在 `release/`）**：
-  - `release/go/AI-Writer-Go.exe` —— **Go 版单文件桌面应用，8.32 MB**（WebView2 原生窗口）。
-    后端用 Go 重写：进程内 HTTP 服务（API 与 Node 版完全一致）、`go:embed` 内嵌前端与 5 个技能、
-    OpenAI 兼容 SSE 流式转发、公文版 .docx 导入导出（手写 OOXML）。只需安装 Go 即可构建，**无需 Rust / Visual Studio**。
+- **新增桌面端打包**：`release/go/AI-Writer-Go.exe` —— **单文件桌面应用，8.4 MB**（WebView2 原生窗口）。
+  后端用 Go 重写：进程内 HTTP 服务（API 与网页版完全一致）、`go:embed` 内嵌前端与 5 个技能、
+  OpenAI 兼容 SSE 流式转发、公文版 .docx 导入导出（手写 OOXML）。只需安装 Go 即可构建，**无需 Rust / Visual Studio**。
+- **窗口尺寸**：默认 **16:10、1440×900**（逻辑像素，按系统 DPI 缩放且不超过屏幕 94%），
+  最小 **1024×640**；改大小只需调整 `release/go/windowsize.go` 的 `targetW/targetH`。
+- **窗口图标**：`logo.png` 经 go-winres 写入 exe 资源（`rsrc_windows_amd64.syso`），标题栏一并显示。
 - **Go 版后端源码** `release/go/`：`main.go`（起服务→开窗口→关窗退出）、`server.go`（HTTP 路由与 API）、
   `skills.go`（按功能拼装提示词，含排版/列表约束）、`llm.go`（SSE 流式）、`docx.go`（导出/导入）、
-  `config.go`（`%APPDATA%\AI-Writer-Desktop\config.json`）、`window_edge.go` 与 `runwindow_webview2.go`
-  （默认 Edge 应用窗口 / `-tags webview2` 原生窗口）、`sync-assets.ps1`（同步内嵌资源）、`assets/`。
-- **命令行参数**：Node 版新增 `--root` / `--data` / `--public` / `--port`；Go 版支持 `-data` / `-port` / `-no-window`，
+  `config.go`（`%APPDATA%\AI-Writer-Desktop\config.json`）、`windowsize.go`（窗口尺寸）、
+  `window_edge.go` 与 `runwindow_webview2.go`（默认 Edge 应用窗口 / `-tags webview2` 原生窗口）、
+  `sync-assets.ps1`（同步内嵌资源）、`assets/`。
+- **命令行参数**：网页版服务端支持 `--root` / `--data` / `--public` / `--port`；Go 版支持 `-data` / `-port` / `-no-window`，
   端口被占用自动顺延（5503→5513）。
 - **启动横幅**：控制台启动输出改为带 emoji 的横幅（版本、访问地址、技能根目录、当前模型、功能一览），
   非终端环境自动退化为纯文本。
 - **修复**：滚动条颜色改为 CSS 变量，随经典红 / 浅蓝 / 浅绿 / 浅黄 / 深色主题切换。
 - **验证记录**：Go 版实测通过——内嵌前端 `GET /` 200、`/api/modes` 五个技能正常加载、`/api/config` 正常读写、
   `/api/export-docx` → `/api/import-docx` 往返内容完整（含预算真实表格，待确认清单不写入）。
-- **目录结构调整**：桌面端成品由 `dist/` 统一迁入 `release/`（`release/go/`、`release/node-93mb/`）。
+- **目录结构调整**：桌面端成品统一放在 `release/go/`。
+- **移除**：早先的 Node 单文件桌面版打包方案（含其产物与构建脚本）已删除，桌面端仅保留 Go 版。
 
 ### v1.1（2026/09/05）
 
@@ -186,7 +178,6 @@ npm run build:exe               # 产物：release/node-93mb/AI-Writer-Desktop.e
 - **列表 / 表格输出约束**：QQ 推送不使用任何列表（仅换行分段）；其余如需分点一律用有序数字列表，不使用 `-`、`•`；除策划案的经费预算外不使用表格。
 - **策划案版式调整**：策划案不再需要「落款」章节，已从固定模板结构与提示中删除。
 - **隐私脱敏**：功能型 skill（策划知识库、公众号把关人、学时示例等）中的真实人名 / 学号已作确定性占位处理。
-- **桌面版打包**：新增 Windows 免安装桌面版——**单文件 `dist/AI-Writer-Desktop.exe`**（约 93 MB，内置 Node 运行时、前端与技能已内嵌，双击即用、无控制台窗口）；服务端新增 `--root` / `--data` / `--public` / `--port` 参数以适配桌面端。
-- **Go 单文件桌面版（体积最小）**：新增 `godesk/`——后端用**纯 Go 标准库**重写（HTTP API 与 Node 版一致、`go:embed` 内嵌前端与技能、公文版 docx 导入导出、OpenAI 兼容 SSE 流式转发），默认构建 **≈3–4 MB**、可选 `-tags webview2` 得到 **≈8–10 MB 的原生 WebView2 窗口**；只需安装 Go，无需 Rust/Visual Studio。
+- **Go 单文件桌面版（体积最小）**：新增 `release/go/`——后端用**纯 Go 重写**（HTTP API 与网页版一致、`go:embed` 内嵌前端与技能、公文版 docx 导入导出、OpenAI 兼容 SSE 流式转发），默认构建 **≈3–4 MB**、可选 `-tags webview2` 得到 **≈8.4 MB 的原生 WebView2 窗口**；只需安装 Go，无需 Rust/Visual Studio。
 - **控制台体验**：启动时输出带 emoji 的启动横幅（版本号、访问地址、技能根目录、当前模型与功能一览），非终端环境自动退化为纯文本。
 - **滚动条主题化**：滚动条滑块颜色改为 CSS 变量，随经典红 / 浅蓝 / 浅绿 / 浅黄 / 深色主题切换。
