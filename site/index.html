@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="red">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>智农 · AI 组织部 写作助手 — 执笔有格，落字成章</title>
+<meta name="description" content="为学院团委组织部而生的 AI 写作工作台：策划案、QQ/微信推送、学时申请与认定、配图提示词，一键成稿并导出 Word 公文版。8.4 MB 单文件，双击即用。" />
+<link rel="icon" href="logo.png" />
+<link rel="apple-touch-icon" href="logo.png" />
+<style>
+  /* ============================================================
+     主题：五套配色，与应用内主题完全对齐
+     red=经典红(默认) / blue=浅蓝 / green=浅绿 / yellow=浅黄 / dark=深色
+     ============================================================ */
+  :root{
+    --bg:#fbf6f4; --bg2:#f7eae6;
+    --card:#ffffff; --card-soft:#fef8f7;
+    --line:#f0dcd9; --line-2:#e4cbc6;
+    --text:#2d1c1a; --muted:#8f6b66; --muted-2:#a98d88;
+    --red:#d0312d; --red-2:#e85a54; --red-deep:#a51c1a; --red-soft:#fdeceb;
+    --tint1:rgba(208,49,45,.10); --tint2:rgba(165,28,26,.08);
+    --sh:80,30,25;
+    --grid:rgba(120,100,95,.075);
+    --nav-bg:rgba(255,255,255,.72);
+    --radius:16px; --radius-sm:10px; --wrap:1120px;
+  }
+  html[data-theme="blue"]{
+    --bg:#f1f6fd; --bg2:#e6effb;
+    --card:#ffffff; --card-soft:#f4f8ff;
+    --line:#dce7f6; --line-2:#c6d6ee;
+    --text:#182233; --muted:#5c6f8c; --muted-2:#8194ad;
+    --red:#2563eb; --red-2:#6aa1ff; --red-deep:#1d4ed8; --red-soft:#e7effe;
+    --tint1:rgba(37,99,235,.09); --tint2:rgba(29,78,216,.07);
+    --sh:20,40,80;
+  }
+  html[data-theme="green"]{
+    --bg:#f1f8f4; --bg2:#e5f2ea;
+    --card:#ffffff; --card-soft:#f4fbf7;
+    --line:#d8ecdf; --line-2:#bfdcc8;
+    --text:#17251c; --muted:#52725f; --muted-2:#7d9a88;
+    --red:#0f9d58; --red-2:#49c98a; --red-deep:#0b7a43; --red-soft:#e3f5ea;
+    --tint1:rgba(15,157,88,.09); --tint2:rgba(11,122,67,.07);
+    --sh:20,60,40;
+  }
+  html[data-theme="yellow"]{
+    --bg:#fdf7ea; --bg2:#f9efdb;
+    --card:#ffffff; --card-soft:#fffaf0;
+    --line:#f0e0c4; --line-2:#e2cba1;
+    --text:#2b2316; --muted:#8a7148; --muted-2:#ab9470;
+    --red:#d97706; --red-2:#f0b04c; --red-deep:#92400e; --red-soft:#fdf3dc;
+    --tint1:rgba(217,119,6,.10); --tint2:rgba(146,64,14,.07);
+    --sh:80,55,10;
+  }
+  html[data-theme="dark"]{
+    --bg:#12151a; --bg2:#0a0d11;
+    --card:#1c2027; --card-soft:#232932;
+    --line:#2f3640; --line-2:#3f4854;
+    --text:#e7ebf0; --muted:#98a2af; --muted-2:#7d8794;
+    --red:#ff5f57; --red-2:#ff8f7a; --red-deep:#ffb3ad; --red-soft:rgba(255,95,87,.12);
+    --tint1:rgba(255,95,87,.10); --tint2:rgba(79,157,255,.06);
+    --sh:0,0,0;
+    --grid:rgba(255,255,255,.055);
+    --nav-bg:rgba(18,21,26,.72);
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:auto}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,-apple-system,sans-serif;
+    line-height:1.75;-webkit-font-smoothing:antialiased;
+    transition:background .35s ease,color .35s ease;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(760px 420px at 12% -8%, var(--tint1), transparent 60%),
+      radial-gradient(680px 380px at 96% 4%, var(--tint2), transparent 55%),
+      linear-gradient(170deg,var(--bg) 0%,var(--bg2) 100%);
+    transition:background .5s ease;
+  }
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.86em}
+  .wrap{width:100%;max-width:var(--wrap);margin:0 auto;padding:0 24px}
+  h1,h2,h3{margin:0;letter-spacing:-.02em;line-height:1.22}
+  h2{font-size:clamp(23px,3vw,33px);font-weight:750}
+  .lead{color:var(--muted);margin:14px 0 0;font-size:clamp(14px,1.55vw,16px);max-width:62ch}
+
+  /* ---------- 顶部滚动进度 ---------- */
+  .progress{position:fixed;top:0;left:0;height:2px;width:0;z-index:60;
+    background:linear-gradient(90deg,var(--red),var(--red-2));transition:width .1s linear}
+
+  /* ---------- 按钮 ---------- */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:12px 22px;border-radius:999px;border:1px solid var(--line-2);background:var(--card);color:var(--text);
+    font-size:14.5px;font-weight:600;cursor:pointer;transition:transform .14s,box-shadow .2s,border-color .2s,background .2s,color .2s}
+  .btn:hover{border-color:var(--red);color:var(--red);transform:translateY(-1px);box-shadow:0 6px 18px rgba(var(--sh),.10)}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{border-color:transparent;color:#fff;background:linear-gradient(135deg,var(--red),var(--red-2));
+    box-shadow:0 8px 22px rgba(var(--sh),.26)}
+  .btn-primary:hover{color:#fff;filter:brightness(1.06);box-shadow:0 12px 30px rgba(var(--sh),.32)}
+  .btn-sm{padding:9px 16px;font-size:13.5px}
+  .btn-primary .arrow{transition:transform .2s}
+  .btn-primary:hover .arrow{transform:translateY(2px)}
+  .link-btn{border:none;background:none;padding:0 4px;color:var(--red);cursor:pointer;font:inherit;font-size:.86em;
+    text-decoration:underline;text-underline-offset:3px}
+  .icon-btn{width:38px;height:38px;padding:0;border-radius:999px;font-size:16px;line-height:1}
+
+  /* ---------- 顶栏 ---------- */
+  .nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:var(--nav-bg);
+    border-bottom:1px solid var(--line);transition:background .35s}
+  .nav-in{display:flex;align-items:center;gap:18px;height:64px}
+  .brand{display:flex;align-items:center;gap:11px;flex:none}
+  .brand img.logo{width:34px;height:34px;border-radius:10px;object-fit:cover;
+    box-shadow:0 6px 16px rgba(var(--sh),.22);transition:transform .25s}
+  .brand:hover img.logo{transform:rotate(-6deg) scale(1.06)}
+  .brand-t{display:flex;flex-direction:column;line-height:1.25}
+  .brand-t b{font-size:14.5px;font-weight:700}
+  .brand-t i{font-style:normal;font-size:11.5px;color:var(--muted)}
+  .nav-links{display:flex;gap:24px;margin-left:auto;font-size:14px;color:var(--muted)}
+  .nav-links a{position:relative;padding:4px 0}
+  .nav-links a::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:1.5px;
+    background:var(--red);transition:right .25s}
+  .nav-links a:hover{color:var(--red)}
+  .nav-links a:hover::after,.nav-links a.on::after{right:0}
+  .nav-tools{display:flex;align-items:center;gap:9px;margin-left:auto}
+  .nav-links + .nav-tools{margin-left:18px}
+  #themeToggle .ic{display:block;transition:transform .4s,opacity .3s}
+  #themeToggle:hover .ic{transform:rotate(20deg)}
+
+  /* ---------- 章节与吸附 ---------- */
+  main{position:relative}
+  section{position:relative}
+  .sec{padding:100px 0}
+  .sec-tight{padding:84px 0}
+  .hero{min-height:calc(100vh - 64px);display:flex;align-items:center;padding:64px 0 72px;overflow:hidden}
+  .hero .wrap{position:relative;z-index:1;text-align:center}
+  .hero::before{
+    content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .5s;
+    background:radial-gradient(420px 320px at var(--mx,50%) var(--my,40%), rgba(var(--sh),.10), transparent 70%);
+  }
+  .hero.lit::before{opacity:1}
+
+  /* ---------- Hero 创意背景：稿纸网格 + 金句从顶部落下（打字机 + 渐显渐隐） ---------- */
+  .hero-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  .hero-bg .grid{position:absolute;inset:-2px;
+    background-image:
+      linear-gradient(var(--grid) 1px,transparent 1px),
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:32px 32px;
+    -webkit-mask-image:radial-gradient(74% 64% at 50% 42%,#000 26%,transparent 100%);
+    mask-image:radial-gradient(74% 64% at 50% 42%,#000 26%,transparent 100%)}
+  .hero-bg .rain{position:absolute;inset:0;overflow:hidden}
+  .hero-bg .rain span{
+    position:absolute;top:-44px;left:0;white-space:nowrap;opacity:0;
+    writing-mode:vertical-rl;text-orientation:upright;line-height:1;
+    font-family:"Songti SC","STSong","SimSun",Georgia,"PingFang SC",serif;
+    font-weight:600;letter-spacing:.16em;color:var(--text);
+    will-change:transform,opacity;
+    animation-name:fall;animation-timing-function:linear;animation-fill-mode:forwards;
+  }
+  html[data-theme="dark"] .hero-bg .rain span{--o:.20}
+  @keyframes fall{
+    0%{opacity:0;transform:translate3d(0,0,0)}
+    12%{opacity:var(--o,.14)}
+    70%{opacity:var(--o,.14)}
+    100%{opacity:0;transform:translate3d(0,var(--dist,620px),0)}
+  }
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--red-deep);
+    background:var(--red-soft);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:600}
+  .eyebrow i{width:6px;height:6px;border-radius:50%;background:var(--red);display:block;
+    box-shadow:0 0 0 0 rgba(var(--sh),.5);animation:pulse 2.4s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(var(--sh),.45)}70%{box-shadow:0 0 0 7px rgba(var(--sh),0)}100%{box-shadow:0 0 0 0 rgba(var(--sh),0)}}
+
+  /* 大标题：一行显示 */
+  .hero h1{margin:28px auto 0;font-weight:800;letter-spacing:-.045em;line-height:1.14;
+    font-size:clamp(27px,7.8vw,88px);white-space:nowrap}
+  .hero h1 .l2{background:linear-gradient(100deg,var(--red),var(--red-2) 55%,var(--red));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero h1 .sep{color:var(--muted-2);font-weight:400}
+  .hero .sub{margin:22px auto 0;color:var(--muted);font-size:clamp(15px,1.75vw,17.5px);max-width:58ch}
+  .chips{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;margin-top:26px}
+  .chip{font-size:12.5px;color:var(--muted);background:var(--card);border:1px solid var(--line);
+    border-radius:999px;padding:6px 13px;transition:transform .18s,border-color .18s}
+  .chip:hover{transform:translateY(-2px);border-color:var(--line-2)}
+  .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:32px}
+  .fine{margin:22px auto 0;font-size:12.5px;color:var(--muted-2);max-width:76ch}
+  .fine code{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:var(--muted);word-break:break-all}
+  .scroll-hint{margin-top:34px;display:inline-flex;flex-direction:column;align-items:center;gap:6px;
+    color:var(--muted-2);font-size:11.5px;letter-spacing:.14em;cursor:pointer}
+  .scroll-hint i{width:18px;height:18px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;
+    transform:rotate(45deg);animation:bob 1.9s infinite}
+  @keyframes bob{0%,100%{transform:translateY(-2px) rotate(45deg);opacity:.5}50%{transform:translateY(3px) rotate(45deg);opacity:1}}
+
+  /* ---------- 揭示动画 ---------- */
+  .rv{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.16,.84,.44,1),transform .7s cubic-bezier(.16,.84,.44,1)}
+  .rv.in{opacity:1;transform:none}
+
+  /* ---------- 功能卡 ---------- */
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px;
+    box-shadow:0 1px 2px rgba(var(--sh),.06);transition:transform .2s,box-shadow .25s,border-color .25s}
+  .card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(var(--sh),.13);border-color:var(--line-2)}
+  .ico{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-size:18px;
+    background:var(--red-soft);border:1px solid var(--line);margin-bottom:14px;transition:transform .25s}
+  .card:hover .ico{transform:scale(1.08) rotate(-4deg)}
+  .card h3{font-size:16px;font-weight:700}
+  .card p{margin:8px 0 0;font-size:13.5px;color:var(--muted)}
+
+  /* ---------- 界面 mockup ---------- */
+  .mock-wrap{margin-top:44px;perspective:1400px}
+  .mock{border-radius:18px;border:1px solid var(--line);background:var(--card);overflow:hidden;
+    box-shadow:0 30px 70px rgba(var(--sh),.18);
+    transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateZ(0);
+    transition:transform .35s cubic-bezier(.16,.84,.44,1),background .35s,border-color .35s}
+  .mock-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 15px;border-bottom:1px solid var(--line);background:var(--card-soft)}
+  .dots{display:flex;gap:6px}
+  .dots i{width:10px;height:10px;border-radius:50%;display:block}
+  .dots i:nth-child(1){background:#e88a84}.dots i:nth-child(2){background:#e8c17a}.dots i:nth-child(3){background:#9fcba6}
+  .mock-title{font-size:12.5px;color:var(--muted);font-weight:600}
+  .theme-dots{margin-left:auto;display:flex;align-items:center;gap:7px}
+  .theme-dots button{width:14px;height:14px;padding:0;border-radius:50%;cursor:pointer;border:1px solid rgba(var(--sh),.18);
+    background:var(--c);transition:transform .2s,box-shadow .2s,outline-color .2s;outline:2px solid transparent;outline-offset:2px}
+  .theme-dots button:hover{transform:scale(1.18)}
+  .theme-dots button.on{outline-color:var(--c)}
+  /* minmax(0,…) 与 min-width:0：网格/弹性子项默认 min-width:auto，内容不肯缩就会把整块撑出屏幕 */
+  .mock-body{display:grid;grid-template-columns:270px minmax(0,1fr);min-height:420px}
+  .mock-side{min-width:0;border-right:1px solid var(--line);background:var(--card-soft);padding:14px;transition:background .35s}
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;background:var(--card);border:1px solid var(--line);
+    border-radius:10px;padding:5px;margin-bottom:14px}
+  .tabs button{border:none;background:transparent;cursor:pointer;font:inherit;font-size:10.5px;font-weight:600;
+    color:var(--muted);padding:7px 2px;border-radius:7px;transition:.2s}
+  .tabs button:hover{color:var(--red)}
+  .tabs button.on{color:#fff;background:linear-gradient(135deg,var(--red),var(--red-2))}
+  .fld{margin-bottom:9px;animation:fadeUp .35s both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .fld label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
+  .fld div{background:var(--card);border:1px solid var(--line-2);border-radius:8px;padding:7px 10px;font-size:12px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:border-color .2s}
+  .fld div.ph{color:var(--muted-2)}
+  .mock-gen{margin-top:13px;width:100%;text-align:center;font:inherit;font-size:12.5px;font-weight:600;color:#fff;
+    padding:10px;border:none;border-radius:9px;cursor:pointer;background:linear-gradient(135deg,var(--red),var(--red-2));
+    box-shadow:0 6px 16px rgba(var(--sh),.24);transition:filter .2s,transform .12s}
+  .mock-gen:hover{filter:brightness(1.07)}
+  .mock-gen:active{transform:translateY(1px)}
+  .mock-gen[disabled]{opacity:.6;cursor:progress}
+  .mock-main{display:flex;flex-direction:column;background:var(--card);transition:background .35s;min-width:0}
+  .mock-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--card-soft)}
+  .seg{display:inline-flex;gap:2px;background:rgba(var(--sh),.07);border-radius:8px;padding:3px}
+  .seg button{border:none;background:transparent;cursor:pointer;font:inherit;font-size:11.5px;font-weight:600;color:var(--muted);
+    padding:5px 15px;border-radius:6px;transition:.2s}
+  .seg button.on{background:var(--card);color:var(--red);box-shadow:0 1px 2px rgba(var(--sh),.08)}
+  .tools{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+  .tools span{font-size:11px;color:var(--muted);border:1px solid var(--line-2);border-radius:7px;padding:4px 9px;background:var(--card)}
+  .busy-chip{display:none;align-items:center;gap:6px;font-size:11px;color:var(--red);margin-left:8px}
+  .mock.busy .busy-chip{display:inline-flex}
+  .spinner{width:11px;height:11px;border:2px solid var(--line-2);border-top-color:var(--red);border-radius:50%;
+    animation:spin .7s linear infinite;display:inline-block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .doc{flex:1;padding:20px 22px;font-size:12.8px;line-height:1.95;min-height:250px;overflow:auto;max-height:420px;min-width:0}
+  .doc h4{margin:14px 0 4px;font-size:13.5px;color:var(--red-deep);font-weight:700}
+  .doc h4:first-child{margin-top:0}
+  .doc p{margin:0 0 8px}
+  .doc .sel{background:var(--red-soft);border-radius:4px;box-shadow:0 0 0 2px var(--red-soft)}
+  .doc .flash{animation:flash 1.1s ease}
+  @keyframes flash{0%{background:rgba(var(--sh),.16)}100%{background:transparent}}
+  .doc pre{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.9;
+    white-space:pre-wrap;word-break:break-word;color:var(--muted)}
+  .doc .tbl{margin:8px 0 10px;border:1px solid var(--line);border-radius:8px;overflow:hidden;font-size:12px;overflow-x:auto}
+  .doc .tbl .tr{display:grid;grid-template-columns:1.25fr 1fr 1fr;border-top:1px solid var(--line)}
+  .doc .tbl .tr:first-child{border-top:none;background:var(--card-soft);font-weight:600}
+  .doc .tbl .tr i{font-style:normal;padding:6px 10px;border-left:1px solid var(--line)}
+  .doc .tbl .tr i:first-child{border-left:none}
+  .caret{display:inline-block;width:7px;height:14px;background:var(--red);vertical-align:-2px;animation:blink .9s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .revise{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid var(--line);background:var(--red-soft)}
+  .revise .tag{font-size:11.5px;font-weight:700;color:var(--red-deep);white-space:nowrap}
+  .revise .inp{flex:1;background:var(--card);border:1px solid var(--line-2);border-radius:8px;padding:6px 10px;
+    font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .revise button{border:none;font:inherit;font-size:11.5px;font-weight:600;border-radius:7px;padding:6px 13px;cursor:pointer}
+  .revise .ok{color:#fff;background:linear-gradient(135deg,var(--red),var(--red-2))}
+  .revise .ok[disabled]{opacity:.45;cursor:not-allowed}
+  .revise .ghost{color:var(--muted);background:transparent}
+  .revise .ghost:hover{color:var(--red)}
+  .mock-tip{margin-top:12px;font-size:12px;color:var(--muted-2);text-align:center}
+
+  /* ---------- Skill 包用法演示（纯前端动画：把 md 拖进 AI 聊天框） ---------- */
+  .demo{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:18px;margin-top:44px;align-items:start}
+  .demo-files,.demo-chat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    overflow:hidden;min-width:0;box-shadow:0 16px 40px rgba(var(--sh),.10);transition:background .35s,border-color .35s}
+  .demo-fhead{display:flex;gap:6px;padding:11px 15px;border-bottom:1px solid var(--line);background:var(--card-soft);
+    font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .demo-fhead i{font-style:normal;color:var(--muted-2);font-weight:500}
+  .demo-file{display:flex;align-items:center;gap:9px;margin:9px 12px;padding:9px 11px;border-radius:9px;
+    border:1px solid var(--line);background:var(--card-soft);font-size:12.5px;min-width:0;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    transition:transform .38s cubic-bezier(.16,.84,.44,1),border-color .3s,background .3s,opacity .3s}
+  .demo-file .fi{flex:none;font-size:9.5px;font-weight:700;color:var(--red-deep);background:var(--red-soft);
+    border:1px solid var(--line);border-radius:5px;padding:2px 5px}
+  .demo-file.on{transform:translateX(6px);border-color:var(--red);background:var(--red-soft)}
+  .demo-file.gone{opacity:.35}
+  .demo-hint{padding:2px 15px 14px;font-size:11.5px;color:var(--muted-2)}
+  .demo-cbar{display:flex;align-items:center;gap:9px;padding:11px 15px;border-bottom:1px solid var(--line);background:var(--card-soft)}
+  .demo-ctitle{min-width:0;font-size:12px;color:var(--muted);font-weight:600;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .demo-cbody{display:flex;flex-direction:column;gap:10px;padding:14px;min-height:252px}
+  .demo-atts{display:flex;flex-wrap:wrap;align-items:center;gap:7px;min-height:34px;padding:7px 9px;
+    border:1px dashed var(--line-2);border-radius:10px;transition:border-color .3s,background .3s}
+  .demo-atts.hot{border-color:var(--red);background:var(--red-soft)}
+  .demo-atts .att{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;background:var(--card);
+    border:1px solid var(--line-2);border-radius:7px;padding:4px 8px;animation:popIn .34s both}
+  .demo-atts .att .fi{font-size:9px;font-weight:700;color:var(--red-deep);background:var(--red-soft);border-radius:4px;padding:1px 4px}
+  .demo-ph{font-size:11.5px;color:var(--muted-2)}
+  @keyframes popIn{from{opacity:0;transform:translateY(6px) scale(.95)}to{opacity:1;transform:none}}
+  .demo-msg{max-width:100%;padding:10px 13px;border-radius:12px;font-size:12.5px;line-height:1.85;
+    white-space:pre-wrap;overflow-wrap:anywhere;animation:popIn .3s both}
+  .demo-msg.me{align-self:flex-end;max-width:88%;color:#fff;border-bottom-right-radius:4px;
+    background:linear-gradient(135deg,var(--red),var(--red-2))}
+  .demo-msg.ai{align-self:flex-start;max-width:94%;background:var(--card-soft);border:1px solid var(--line)}
+  .demo-msg[hidden]{display:none}
+  .demo-note{font-size:11px;color:var(--muted-2);align-self:flex-start}
+  .demo-typing{display:inline-flex;align-items:center;gap:4px}
+  .demo-typing i{width:5px;height:5px;border-radius:50%;background:var(--muted-2);animation:rise 1s infinite}
+  .demo-typing i:nth-child(2){animation-delay:.16s}
+  .demo-typing i:nth-child(3){animation-delay:.32s}
+  @keyframes rise{0%,100%{opacity:.35;transform:translateY(0)}50%{opacity:1;transform:translateY(-2px)}}
+  .demo-input{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--line);background:var(--card-soft)}
+  .demo-input .demo-ph{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .demo-send{flex:none;font-size:11.5px;font-weight:600;color:#fff;border-radius:8px;padding:6px 14px;
+    background:linear-gradient(135deg,var(--red),var(--red-2));transition:opacity .3s}
+  .demo-send.wait{opacity:.5}
+  .fly{position:fixed;z-index:70;pointer-events:none;display:inline-flex;align-items:center;gap:6px;font-size:11.5px;
+    padding:5px 9px;border-radius:8px;color:var(--text);background:var(--card);border:1px solid var(--red);
+    box-shadow:0 10px 26px rgba(var(--sh),.24);transition:transform .6s cubic-bezier(.45,.05,.2,1),opacity .6s}
+  .fly .fi{font-size:9px;font-weight:700;color:var(--red-deep);background:var(--red-soft);border-radius:4px;padding:1px 4px}
+  .demo-tip{margin-top:16px;font-size:12.5px;color:var(--muted-2);text-align:center}
+  .demo-tip b{color:var(--red-deep)}
+
+  /* ---------- 流程 ---------- */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px;counter-reset:s}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px;counter-increment:s;
+    transition:transform .2s,border-color .25s,box-shadow .25s}
+  .step:hover{transform:translateY(-3px);border-color:var(--line-2);box-shadow:0 14px 34px rgba(var(--sh),.10)}
+  .step::before{content:counter(s,decimal-leading-zero);font-size:12px;font-weight:800;color:var(--red);letter-spacing:.08em}
+  .step h3{margin-top:10px;font-size:16px}
+  .step p{margin:8px 0 0;font-size:13.5px;color:var(--muted)}
+
+  /* ---------- 可信 ---------- */
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:44px}
+  .mini{background:var(--card-soft);border:1px solid var(--line);border-radius:var(--radius-sm);padding:18px;transition:border-color .25s,transform .2s}
+  .mini:hover{border-color:var(--line-2);transform:translateY(-2px)}
+  .mini b{display:block;font-size:14px}
+  .mini span{display:block;margin-top:6px;font-size:12.5px;color:var(--muted)}
+
+  /* ---------- FAQ ---------- */
+  details{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px 18px;margin-top:12px;
+    transition:border-color .25s,background .35s}
+  details[open]{border-color:var(--line-2)}
+  summary{cursor:pointer;font-weight:600;font-size:14.5px;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"＋";float:right;color:var(--red);font-weight:700}
+  details[open] summary::after{content:"－"}
+  details p{margin:12px 0 0;font-size:13.5px;color:var(--muted)}
+
+  /* ---------- 下载区 ---------- */
+  .dl-box{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:52px 28px;text-align:center;
+    box-shadow:0 20px 50px rgba(var(--sh),.10);position:relative;overflow:hidden}
+  .dl-box::after{content:"";position:absolute;inset:-40% 30% auto;height:180px;
+    background:radial-gradient(closest-side,var(--tint1),transparent);pointer-events:none}
+  /* 次要下载项：仅 Skill 包 */
+  .dl-alt{position:relative;display:flex;align-items:center;gap:22px;flex-wrap:wrap;text-align:left;
+    margin:30px auto 0;padding:20px 24px;max-width:760px;background:var(--card-soft);
+    border:1px solid var(--line);border-radius:16px;transition:border-color .25s,background .35s}
+  .dl-alt:hover{border-color:var(--line-2)}
+  .dl-alt-t{flex:1 1 200px;min-width:0}
+  .dl-alt-t b{display:block;font-size:15px}
+  .dl-alt-t span{display:block;margin-top:6px;font-size:13px;line-height:1.7;color:var(--muted)}
+
+  /* ---------- 页脚 ---------- */
+  footer{border-top:1px solid var(--line);padding:38px 0 46px;background:var(--card-soft);transition:background .35s}
+  .foot{display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+  .foot img{width:26px;height:26px;border-radius:8px;object-fit:cover;vertical-align:-8px;margin-right:8px}
+  .foot .right{margin-left:auto;display:flex;gap:18px;flex-wrap:wrap}
+  .foot a:hover{color:var(--red)}
+
+  /* ---------- 右侧页码点 ---------- */
+  .rail{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:45;display:flex;flex-direction:column;gap:12px}
+  .rail button{width:9px;height:9px;padding:0;border-radius:50%;cursor:pointer;border:1px solid var(--line-2);
+    background:transparent;transition:.25s;position:relative}
+  .rail button::after{content:attr(data-t);position:absolute;right:20px;top:50%;transform:translateY(-50%) translateX(6px);
+    background:var(--card);border:1px solid var(--line);color:var(--muted);font-size:11.5px;padding:4px 9px;border-radius:7px;
+    white-space:nowrap;opacity:0;pointer-events:none;transition:.22s}
+  .rail button:hover::after{opacity:1;transform:translateY(-50%)}
+  .rail button.on{background:var(--red);border-color:var(--red);transform:scale(1.25)}
+
+  /* ---------- 响应式 ---------- */
+  @media (max-width:1000px){
+    .grid-3{grid-template-columns:repeat(2,1fr)}
+    .grid-4{grid-template-columns:repeat(2,1fr)}
+    .nav-links{display:none}
+    .rail{display:none}
+  }
+  @media (max-width:760px){
+    .sec{padding:68px 0}.sec-tight{padding:60px 0}
+    .grid-3,.steps,.grid-4{grid-template-columns:1fr}
+    .mock-wrap{perspective:none}                      /* 关掉 3D 透视，投影不会再把方块顶出屏幕 */
+    .mock-body{grid-template-columns:minmax(0,1fr)}
+    .mock-side{border-right:none;border-bottom:1px solid var(--line)}
+    .tabs{grid-template-columns:repeat(2,1fr)}
+    .hero{min-height:auto;padding:52px 0 60px}
+    .tools{display:none}
+    .demo{grid-template-columns:minmax(0,1fr)}
+    .doc{padding:16px}
+    .dl-alt{gap:16px}
+  }
+  /* 窄屏手机：顶栏与单行大标题最容易被 nowrap 撑破，再单独收一档 */
+  @media (max-width:430px){
+    .wrap{padding:0 16px}
+    .nav-in{gap:12px}
+    .brand,.brand-t{min-width:0}
+    .brand img.logo{width:30px;height:30px}
+    .brand-t i{display:none}
+    .brand-t b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .nav-tools{flex:none}
+    .btn-sm{padding:8px 13px;font-size:13px}
+    .hero h1{font-size:clamp(23px,7.4vw,88px)}
+    .hero .sub{margin-top:18px}
+    .mock-bar{gap:8px;padding:10px 12px}
+    .mock-title{font-size:11.5px}
+    .theme-dots{gap:5px}
+    .theme-dots button{width:12px;height:12px}
+    .mock-head{padding:10px 12px}
+    .seg button{padding:5px 11px}
+    .doc{padding:14px}
+    .dl-box{padding:36px 18px}
+    .dl-alt{padding:18px 16px;gap:14px}
+    .dl-alt .btn{width:100%;justify-content:center}
+    .demo-cbody{padding:12px}
+    .demo-msg{font-size:12px}
+    .demo-file{margin:8px 10px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001s!important;transition-duration:.001s!important}
+    .rv{opacity:1;transform:none}
+    .mock{transform:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<!-- ==================== 顶栏 ==================== -->
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top" data-goto="top">
+      <img class="logo" src="logo.png" alt="项目 Logo" />
+      <span class="brand-t"><b>智农 · AI 组织部</b><i>写作助手</i></span>
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#features" data-goto="features">功能</a>
+      <a href="#ui" data-goto="ui">界面</a>
+      <a href="#use-skill" data-goto="use-skill">用法</a>
+      <a href="#flow" data-goto="flow">流程</a>
+      <a href="#tech" data-goto="tech">技术</a>
+      <a href="#faq" data-goto="faq">问答</a>
+    </nav>
+    <div class="nav-tools">
+      <button class="btn icon-btn" id="themeToggle" title="切换深色 / 浅色主题" aria-label="切换主题">
+        <span class="ic" id="themeIcon">☾</span>
+      </button>
+      <a class="btn btn-primary btn-sm js-dl" href="#" download>下载 <span class="arrow">⬇</span></a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ==================== Hero ==================== -->
+  <section class="hero" id="top" data-snap data-title="首页">
+    <div class="hero-bg" aria-hidden="true">
+      <span class="grid"></span>
+      <div class="rain" id="qRain"></div>
+    </div>
+    <div class="wrap">
+      <span class="eyebrow rv"><i></i>v1.2.0 · Windows 10/11 · 免安装</span>
+      <h1 class="rv" aria-label="执笔有格，落字成章">
+        <span class="l1">执笔有格</span><span class="sep">，</span><span class="l2">落字成章</span>
+      </h1>
+      <p class="sub rv">策划案 · QQ/微信推送 · 学时表单 · 配图提示词——一套为团委组织部而生的 AI 写作工作台。</p>
+      <div class="chips rv">
+        <span class="chip">8.4 MB 单文件</span>
+        <span class="chip">双击即用，免装运行时</span>
+        <span class="chip">WebView2 原生窗口</span>
+        <span class="chip">API Key 仅存本机</span>
+        <span class="chip">Word 公文版导出</span>
+      </div>
+      <div class="cta rv">
+        <a class="btn btn-primary js-dl" href="#" download>下载 Windows 版（8.4 MB）<span class="arrow">⬇</span></a>
+        <a class="btn js-dl-skill" href="#" download>仅下载 Skill 包<span class="arrow">⬇</span></a>
+        <a class="btn" href="https://github.com/tengkongJS-MC/AI_SA-AI_OD-NAU" target="_blank" rel="noopener">查看源码</a>
+      </div>
+      <p class="fine rv">
+        下载源：应用 <span id="dl-src">GitHub Release</span> · Skill 包 <span id="dl-src-skill">GitHub Release</span> ·
+        SHA256 <code id="sha">DEB60DEFC8B53D4B59BA150F7C38CFD39AB2AA4D7EF01AA1F38E2141AD775765</code>
+        <button class="link-btn" id="copy-sha">复制</button><br />
+        未做代码签名，SmartScreen 提示时选「更多信息 → 仍要运行」；需系统自带 WebView2（Win10/11 一般自带）。
+      </p>
+      <div class="scroll-hint rv" data-goto="features" role="button" tabindex="0"><span>下滑探索</span><i></i></div>
+    </div>
+  </section>
+
+  <!-- ==================== 功能 ==================== -->
+  <section class="sec" id="features" data-snap data-title="功能">
+    <div class="wrap">
+      <h2 class="rv">一个工作台，写完组织部的日常材料</h2>
+      <p class="lead rv">左侧填信息，右侧出成稿；选中一段可定向改写，一键导出 Markdown、纯文本或 Word 公文版。</p>
+      <div class="grid-3">
+        <div class="card rv"><div class="ico">🧭</div><h3>策划案</h3><p>严格套用学院固定模板（封面→背景→目的→…→经费预算→附件），自动附「待确认清单」，填完即出定稿。</p></div>
+        <div class="card rv"><div class="ico">💬</div><h3>QQ 空间推送</h3><p>按部门与推送类型（预告 / 回顾 / 科普 / 栏目 / 通知）仿写，短句分段，适配手机阅读。</p></div>
+        <div class="card rv"><div class="ico">📱</div><h3>微信推送</h3><p>贴合官方公众号调性，给出标题、正文与页脚信息栏，兼顾庄重与青春两种腔调。</p></div>
+        <div class="card rv"><div class="ico">⏱</div><h3>学时申请 / 认定</h3><p>引导式生成申请表与认定表，自动校验名称字数、时间先后、学积分区间与劳育折算规则。</p></div>
+        <div class="card rv"><div class="ico">🖼</div><h3>配图提示词</h3><p>为成稿一键生成「1 张主题主图 + 若干辅助配图」的图片提示词，比例、数量、风格、配色可选。</p></div>
+        <div class="card rv"><div class="ico">📄</div><h3>Word 公文导出</h3><p>A4、仿宋四号、首行缩进 2 字符、固定行距；一级黑体 / 二级楷体 / 三级仿宋，预算导出为真实表格。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 界面（可交互） ==================== -->
+  <section class="sec-tight" id="ui" data-snap data-title="界面">
+    <div class="wrap">
+      <h2 class="rv">界面预览 · 可以点着玩</h2>
+      <p class="lead rv">切换左上角类型、试试点「✦ 生成全文」，或点标题栏那五个小圆点换主题——那就是应用里的五套配色。</p>
+      <div class="mock-wrap rv">
+        <div class="mock" id="mock">
+          <div class="mock-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="mock-title">智农 · AI 组织部 写作助手</span>
+            <span class="theme-dots" id="themeDots">
+              <button data-th="red" style="--c:#d0312d" title="经典红"></button>
+              <button data-th="blue" style="--c:#2563eb" title="浅蓝"></button>
+              <button data-th="green" style="--c:#0f9d58" title="浅绿"></button>
+              <button data-th="yellow" style="--c:#d97706" title="浅黄"></button>
+              <button data-th="dark" style="--c:#1c2027" title="深色"></button>
+            </span>
+          </div>
+          <div class="mock-body">
+            <aside class="mock-side">
+              <div class="tabs" id="mockTabs">
+                <button data-mode="plan" class="on">策划案</button>
+                <button data-mode="qq">QQ</button>
+                <button data-mode="wechat">微信</button>
+                <button data-mode="time">学时</button>
+              </div>
+              <div id="mockFields"></div>
+              <button class="mock-gen" id="mockGen">✦ 生成全文</button>
+            </aside>
+            <section class="mock-main">
+              <div class="mock-head">
+                <div class="seg" id="mockViews">
+                  <button data-view="edit" class="on">编辑</button>
+                  <button data-view="preview">预览</button>
+                  <button data-view="plain">纯文本</button>
+                </div>
+                <span class="busy-chip"><span class="spinner"></span>正在生成…</span>
+                <div class="tools"><span>💾 保存</span><span>复制</span><span>.md</span><span>Word</span></div>
+              </div>
+              <div class="doc" id="mockDoc"></div>
+              <div class="revise">
+                <span class="tag">✎ 已选中 <b id="selCount">0</b> 字</span>
+                <span class="inp">语气更热血 / 补充活动意义</span>
+                <button class="ok" id="mockApply" disabled>应用</button>
+                <button class="ghost" id="mockCancel">取消</button>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+      <p class="mock-tip rv">※ 以上为纯前端演示，真实界面与生成效果请安装桌面版体验。</p>
+    </div>
+  </section>
+
+  <!-- ==================== Skill 包用法演示 ==================== -->
+  <section class="sec" id="use-skill" data-snap data-title="怎么用">
+    <div class="wrap">
+      <h2 class="rv">Skill 包怎么用：拖进 AI 聊天框就行</h2>
+      <p class="lead rv">不装程序，也不用配 API Key。把 skill 的 md 文件拖进任意 AI 对话，再说一句你要写什么，它就照学院的模板与话术来写。</p>
+
+      <div class="demo rv" id="skillDemo">
+        <!-- 左：解压后的文件夹 -->
+        <div class="demo-files">
+          <div class="demo-fhead">AIOD-Skills-v1.2 <i>/ QQ_push_skill_v2</i></div>
+          <div class="demo-file" data-file="0"><span class="fi">MD</span>SKILL.md</div>
+          <div class="demo-file" data-file="1"><span class="fi">MD</span>references/style.md</div>
+          <div class="demo-file" data-file="2"><span class="fi">MD</span>references/examples.md</div>
+          <div class="demo-hint">解压后选中要用的 md（连同 references/ 一起更稳）</div>
+        </div>
+
+        <!-- 右：任意 AI 对话窗 -->
+        <div class="demo-chat">
+          <div class="demo-cbar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span class="demo-ctitle">任意 AI 对话：DeepSeek / 豆包 / Kimi / 通义 / ChatGPT…</span>
+          </div>
+          <div class="demo-cbody">
+            <div class="demo-atts" id="demoAtts"><span class="demo-ph">把 .md 拖到这里松手</span></div>
+            <div class="demo-msg me" id="demoAsk" hidden></div>
+            <div class="demo-msg ai" id="demoReply" hidden></div>
+          </div>
+          <div class="demo-input">
+            <span class="demo-ph" id="demoPh">拖入文件，或直接在这里粘贴</span>
+            <span class="demo-send" id="demoSend">发送</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="demo-tip rv">解压 → 拖进聊天框 → 说一句需求 → 复制成稿 ·
+        完整教程与各技能示例话术在压缩包的 <code>README.md</code> 里（还没有包？在下面的下载区一键拿走）</p>
+    </div>
+  </section>
+
+  <!-- ==================== 流程 ==================== -->
+  <section class="sec" id="flow" data-snap data-title="流程">
+    <div class="wrap">
+      <h2 class="rv">三步就能交付</h2>
+      <p class="lead rv">从拿到活动通知到交出材料，通常只需要几分钟。</p>
+      <div class="steps">
+        <div class="step rv"><h3>填写活动信息</h3><p>选类型（策划案 / QQ / 微信 / 学时），填活动名称、时间、地点、对象等；也可导入已有策划案，或从「我的存档」直接载入。</p></div>
+        <div class="step rv"><h3>✦ 生成全文</h3><p>模型按对应 skill 的模板与话术流式成稿；策划案会自动附「待确认清单」，可在界面里逐项填写并回填成定稿。</p></div>
+        <div class="step rv"><h3>改写与导出</h3><p>选中任意段落提意见即定向改写；整体润色、复制纯文本、导出 <code>.md</code> / <code>.txt</code> / <code>.docx</code>（公文版）。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 技术 ==================== -->
+  <section class="sec-tight" id="tech" data-snap data-title="技术">
+    <div class="wrap">
+      <h2 class="rv">轻、快、可控</h2>
+      <p class="lead rv">桌面端用 Go 重写，前端与技能文件全部内嵌进单个可执行文件。</p>
+      <div class="grid-4">
+        <div class="mini rv"><b>8.4 MB 单文件</b><span>无需安装 Node、Rust 或 .NET，拷贝即用</span></div>
+        <div class="mini rv"><b>本地回环</b><span>窗口连的是本机 127.0.0.1:5503，端口占用自动顺延</span></div>
+        <div class="mini rv"><b>Key 只存本机</b><span>配置保存在 %APPDATA%\AI-Writer-Desktop\config.json</span></div>
+        <div class="mini rv"><b>模型可选</b><span>智谱 GLM-4.7-Flash（免费）或 DeepSeek，兼容 OpenAI 协议</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== FAQ ==================== -->
+  <section class="sec-tight" id="faq" data-snap data-title="问答">
+    <div class="wrap">
+      <h2 class="rv">常见问题</h2>
+      <div class="rv">
+        <details><summary>Windows 提示「已保护你的电脑」怎么办？</summary><p>程序未做代码签名。点提示里的「更多信息」→「仍要运行」即可；也可先核对页面上的 SHA256 与官方 Release 一致。</p></details>
+        <details><summary>需要先安装什么运行环境？</summary><p>不需要。exe 已内置全部依赖，只需系统自带 <b>WebView2 运行时</b>（Windows 10/11 一般已预装）。</p></details>
+        <details><summary>API Key 从哪来？会不会被上传？</summary><p>用智谱开放平台或 DeepSeek 开放平台的 Key，在应用右上角「⚙ 模型设置」里填写。Key 仅保存在本机配置文件中，请求由你的电脑直连模型服务。</p></details>
+        <details><summary>为什么导出的 Word 是公文格式？</summary><p>按学院公文规范排版：A4、正文仿宋四号、首行缩进 2 字符、固定行距，一级标题黑体、二级楷体、三级仿宋；策划案自动套封面并分页，经费预算导出为真实表格。</p></details>
+        <details><summary>可以换配色吗？</summary><p>可以。应用内置经典红、浅蓝、浅绿、浅黄与深色五套主题——界面预览标题栏那五个小圆点就是它们，点一下整页都会跟着换。</p></details>
+        <details><summary>Skill 包是什么？不装程序也能用吗？</summary><p>Skill 包是策划案、QQ 推送、微信推送、配图提示词、学时表单五个技能的规则与参考文档，纯 Markdown 文本，共 66 KB。解压后把某个 skill 文件夹里的 <code>SKILL.md</code> 连同同目录的 <code>references/</code> 一起拖进 AI 聊天框，再说一句你的需求，它就会照着这套规则写；包内 <code>README.md</code> 有完整教程与示例话术，不想用桌面程序也能直接使用。</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 下载 ==================== -->
+  <section class="sec-tight" id="download" data-snap data-title="下载">
+    <div class="wrap">
+      <div class="dl-box rv">
+        <h2>现在下载，双击就能用</h2>
+        <p class="lead" style="margin:14px auto 0">Windows 10/11（x64）· 8.41 MB · 版本 v1.2.0</p>
+        <div class="cta">
+          <a class="btn btn-primary js-dl" href="#" download>下载 AIOD-Writer-Go-v1.2.exe<span class="arrow">⬇</span></a>
+          <a class="btn" href="https://github.com/tengkongJS-MC/AI_SA-AI_OD-NAU/releases/tag/v1.2.0" target="_blank" rel="noopener">前往 Release 页</a>
+        </div>
+        <p class="fine">SHA256（v1.2）：<code>DEB60DEFC8B53D4B59BA150F7C38CFD39AB2AA4D7EF01AA1F38E2141AD775765</code></p>
+
+        <div class="dl-alt">
+          <div class="dl-alt-t">
+            <b>只要提示词，不要程序？</b>
+            <span>五个 skill 的完整规则与参考文档（纯 Markdown）＋ 一份使用教程，已作为附件发布在 Release <code>v1.2.0</code>；解压后拖进 AI 聊天框就能用。</span>
+          </div>
+          <a class="btn js-dl-skill" href="#" download>仅下载 Skill 包（66 KB）<span class="arrow">⬇</span></a>
+        </div>
+        <p class="fine">
+          Skill 包 <code>AIOD-Skills-v1.2.zip</code> ·
+          <a id="rel-skill" href="https://github.com/tengkongJS-MC/AI_SA-AI_OD-NAU/releases/download/v1.2.0/AIOD-Skills-v1.2.zip" target="_blank" rel="noopener">Release 直链</a> ·
+          <a href="https://github.com/tengkongJS-MC/AI_SA-AI_OD-NAU/releases/tag/v1.2.0" target="_blank" rel="noopener">附件页</a> ·
+          含 <code>README.md</code> 教程与示例话术 · SHA256
+          <code>31E4AD7C1AA517E4F6A44A5E591B4637979E398E8B8F8475F933C68A24B2A3CE</code>
+        </p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ==================== 页脚 ==================== -->
+<footer>
+  <div class="wrap foot">
+    <span><img src="logo.png" alt="" />智农 · AI 组织部 写作助手 · v1.2.0</span>
+    <span class="right">
+      <a href="https://github.com/tengkongJS-MC/AI_SA-AI_OD-NAU" target="_blank" rel="noopener">GitHub 仓库</a>
+      <a href="https://github.com/tengkongJS-MC/AI_SA-AI_OD-NAU/releases" target="_blank" rel="noopener">Releases</a>
+      <a href="https://github.com/tengkongJS-MC/AI_SA-AI_OD-NAU/blob/main/README.md" target="_blank" rel="noopener">使用文档</a>
+    </span>
+  </div>
+</footer>
+
+<!-- ==================== 右侧页码点 ==================== -->
+<nav class="rail" id="rail" aria-label="页面导航"></nav>
+
+<script>
+/* ============================================================
+   1) 主题：五套（与应用一致），localStorage 记忆
+   ============================================================ */
+var THEMES = ['red','blue','green','yellow','dark'];
+var TK = 'aiod-site-theme';
+
+function setTheme(name, persist){
+  if (THEMES.indexOf(name) < 0) name = 'red';
+  document.documentElement.setAttribute('data-theme', name);
+  var dots = document.querySelectorAll('#themeDots button');
+  for (var i=0;i<dots.length;i++) dots[i].classList.toggle('on', dots[i].getAttribute('data-th') === name);
+  var ic = document.getElementById('themeIcon');
+  if (ic) ic.textContent = (name === 'dark') ? '☀' : '☾';
+  if (persist) { try { localStorage.setItem(TK, name); } catch(e){} }
+}
+
+(function initTheme(){
+  var saved = null;
+  try { saved = localStorage.getItem(TK); } catch(e){}
+  if (!saved) saved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'red';
+  setTheme(saved, false);
+})();
+
+document.getElementById('themeDots').addEventListener('click', function(e){
+  var b = e.target.closest ? e.target.closest('button[data-th]') : null;
+  if (b) setTheme(b.getAttribute('data-th'), true);
+});
+
+document.getElementById('themeToggle').addEventListener('click', function(){
+  var cur = document.documentElement.getAttribute('data-theme');
+  if (cur === 'dark') {
+    var back = 'red';
+    try { back = localStorage.getItem('aiod-site-light') || 'red'; } catch(e){}
+    setTheme(back, true);
+  } else {
+    try { localStorage.setItem('aiod-site-light', cur); } catch(e){}
+    setTheme('dark', true);
+  }
+});
+
+/* ============================================================
+   2) 章节跳转：使用浏览器原生平滑滚动（不做任何滚轮劫持）
+   ============================================================ */
+function goTo(id){
+  var el = document.getElementById(id);
+  if (!el) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var top = el.getBoundingClientRect().top + (window.pageYOffset || 0) - 66;
+  window.scrollTo({ top: top, behavior: reduce ? 'auto' : 'smooth' });
+}
+document.addEventListener('click', function(e){
+  var a = e.target.closest ? e.target.closest('[data-goto]') : null;
+  if (a){ e.preventDefault(); goTo(a.getAttribute('data-goto')); }
+});
+document.addEventListener('keydown', function(e){
+  var a = e.target.closest ? e.target.closest('[data-goto]') : null;
+  if (a && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); goTo(a.getAttribute('data-goto')); }
+});
+
+/* ============================================================
+   3) 右侧页码点 + 进度条 + 导航高亮
+   ============================================================ */
+(function buildRail(){
+  var rail = document.getElementById('rail');
+  var secs = document.querySelectorAll('[data-snap]');
+  for (var i=0;i<secs.length;i++){
+    (function(sec){
+      var b = document.createElement('button');
+      b.setAttribute('data-t', sec.getAttribute('data-title') || '');
+      b.setAttribute('aria-label', sec.getAttribute('data-title') || sec.id);
+      b.addEventListener('click', function(){ goTo(sec.id); });
+      rail.appendChild(b);
+    })(secs[i]);
+  }
+})();
+
+(function scrollSpy(){
+  var bar = document.getElementById('progress');
+  var railBtns = document.querySelectorAll('#rail button');
+  var navAs = document.querySelectorAll('#navLinks a');
+  var secs = document.querySelectorAll('[data-snap]');
+  var ticking = false;
+
+  function update(){
+    ticking = false;
+    var y = window.scrollY || window.pageYOffset || 0;
+    var max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    if (bar) bar.style.width = Math.min(100, (y / max) * 100) + '%';
+
+    var idx = 0, mid = y + window.innerHeight * 0.34;
+    for (var i=0;i<secs.length;i++){
+      if (secs[i].getBoundingClientRect().top + y <= mid) idx = i;
+    }
+    for (var j=0;j<railBtns.length;j++) railBtns[j].classList.toggle('on', j === idx);
+    if (secs[idx]) {
+      for (var k=0;k<navAs.length;k++) navAs[k].classList.toggle('on', navAs[k].getAttribute('data-goto') === secs[idx].id);
+    }
+  }
+  window.addEventListener('scroll', function(){
+    if (!ticking){ ticking = true; requestAnimationFrame(update); }
+  }, { passive: true });
+  window.addEventListener('resize', update);
+  update();
+})();
+
+/* ============================================================
+   4) 揭示动画（轻微错峰）
+   ============================================================ */
+(function reveal(){
+  var items = document.querySelectorAll('.rv');
+  if (!('IntersectionObserver' in window)){
+    for (var i=0;i<items.length;i++) items[i].classList.add('in');
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if (!en.isIntersecting) return;
+      var sibs = en.target.parentNode ? en.target.parentNode.children : null;
+      var order = 0;
+      if (sibs) for (var i=0;i<sibs.length;i++) if (sibs[i] === en.target) order = i;
+      en.target.style.transitionDelay = Math.min(order, 6) * 55 + 'ms';
+      en.target.classList.add('in');
+      io.unobserve(en.target);
+    });
+  }, { rootMargin: '0px 0px -10% 0px', threshold: 0.06 });
+  for (var j=0;j<items.length;j++) io.observe(items[j]);
+})();
+
+/* ============================================================
+   5) Hero 鼠标聚光 + mockup 轻微倾斜
+   ============================================================ */
+(function spotlight(){
+  var hero = document.querySelector('.hero');
+  if (!hero || !window.matchMedia || !window.matchMedia('(pointer: fine)').matches) return;
+  hero.addEventListener('mousemove', function(e){
+    var r = hero.getBoundingClientRect();
+    hero.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+    hero.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+    hero.classList.add('lit');
+  });
+  hero.addEventListener('mouseleave', function(){ hero.classList.remove('lit'); });
+})();
+
+/* ---------- Hero 背景：金句从顶部随机出现、向下渐显落下、渐隐消失（含打字机） ---------- */
+(function quoteRain(){
+  var box = document.getElementById('qRain');
+  if (!box) return;
+
+  var PHRASES = [
+    /* 取自项目 skill 原文 */
+    '以青春之名，赴先锋之约',
+    '星火新程，丹心启航',
+    '凝心悟国是，砺志启新程',
+    '春华秋实结硕果，先锋领航正当时',
+    '把论文写在祖国大地上',
+    '淬言成锋，辩以砺才',
+    '智创未来，篮动青春',
+    '烟火藏诗意，家味暖同窗',
+    '让代码与灵感在田间地头碰撞',
+    '以辩会友，以论启思',
+    /* 同风格新句 */
+    '落笔成文，举事有章',
+    '文以载道，智以赋能',
+    '谋定而后动，文成而后行',
+    '规范为骨，文采为衣',
+    '笔下有丘壑，屏前有乾坤',
+    '一字一句，皆有出处',
+    '策划有据，推送有神',
+    '以智为犁，以笔为锄',
+    '严谨立文，从容理事',
+    '把繁琐交给流程，把表达留给自己'
+  ];
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var narrow = (window.innerWidth || 1200) < 760;
+  var MAX = narrow ? 3 : 6;
+
+  /* 关闭动效时：静态铺几句，不跑动画 */
+  if (reduce){
+    for (var s = 0; s < 4; s++){
+      var sp = document.createElement('span');
+      sp.textContent = PHRASES[(s * 5) % PHRASES.length];
+      sp.style.left = (5 + s * 25) + '%';
+      sp.style.top = (14 + (s % 2) * 34) + '%';
+      sp.style.fontSize = '19px';
+      sp.style.opacity = '.12';
+      sp.style.animation = 'none';
+      box.appendChild(sp);
+    }
+    return;
+  }
+
+  var active = 0, cursor = Math.floor(Math.random() * PHRASES.length);
+  function nextPhrase(){
+    cursor = (cursor + 1 + Math.floor(Math.random() * 3)) % PHRASES.length;  // 跳着取，避免连着重复
+    return PHRASES[cursor];
+  }
+
+  function spawn(){
+    if (active >= MAX) return;
+    var el = document.createElement('span');
+    var text = nextPhrase();
+    var size = narrow ? (14 + Math.random() * 3) : (17 + Math.random() * 5);
+    var x;
+    if (Math.random() < 0.72) x = Math.random() < 0.5 ? 3 + Math.random() * 22 : 64 + Math.random() * 28;
+    else x = 12 + Math.random() * 68;               // 少数落在中间，保持"随机感"
+    var dur = 9 + Math.random() * 6;                // 9~15s 落到底
+    var textH = text.length * size * 1.25;          // 竖排：整列文字的高度
+    var dist = (window.innerHeight || 700) + textH + 120;
+
+    el.style.left = x.toFixed(1) + '%';
+    el.style.fontSize = size.toFixed(1) + 'px';
+    el.style.top = (-textH - 40).toFixed(0) + 'px';  // 整列从画面外开始，完整落进来
+    el.style.setProperty('--dist', dist.toFixed(0) + 'px');
+    el.style.setProperty('--o', (0.10 + Math.random() * 0.07).toFixed(3));
+    el.style.animationDuration = dur.toFixed(2) + 's';
+    box.appendChild(el);
+
+    /* 打字机：逐字出现（节奏放慢） */
+    var i = 0, speed = 150 + Math.random() * 110;   // 150~260 ms/字
+    var typer = setInterval(function(){
+      el.textContent = text.slice(0, ++i);
+      if (i >= text.length) clearInterval(typer);
+    }, speed);
+
+    active++;
+    el.addEventListener('animationend', function(){
+      clearInterval(typer);
+      if (el.parentNode) el.parentNode.removeChild(el);
+      active--;
+    });
+  }
+
+  /* 只在 Hero 可见、且页面在前台时生成 */
+  var visible = true;
+  if ('IntersectionObserver' in window){
+    new IntersectionObserver(function(en){ visible = en[0].isIntersecting; }, { threshold: 0.05 })
+      .observe(document.getElementById('top'));
+  }
+  setInterval(function(){
+    if (!visible || document.hidden) return;
+    spawn();
+  }, 1150);
+  spawn();
+})();
+
+(function tilt(){
+  var mock = document.getElementById('mock');
+  if (!mock) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var fine = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
+  if (reduce || !fine) return;
+  var wrap = mock.parentNode;
+  wrap.addEventListener('mousemove', function(e){
+    var r = wrap.getBoundingClientRect();
+    var px = (e.clientX - r.left) / r.width - 0.5;
+    var py = (e.clientY - r.top) / r.height - 0.5;
+    mock.style.setProperty('--ry', (px * 5).toFixed(2) + 'deg');
+    mock.style.setProperty('--rx', (-py * 4).toFixed(2) + 'deg');
+  });
+  wrap.addEventListener('mouseleave', function(){
+    mock.style.setProperty('--ry', '0deg');
+    mock.style.setProperty('--rx', '0deg');
+  });
+})();
+
+/* ============================================================
+   6) 下载：优先同目录本地文件，其次 GitHub Release
+      app = 桌面程序（exe）· skill = 仅 Skill 包（zip）
+   ============================================================ */
+var ASSETS = {
+  app: {
+    sel: '.js-dl',
+    src: 'dl-src',
+    link: 'rel-app',
+    local: 'AIOD-Writer-Go-v1.2.exe',
+    release: 'https://github.com/tengkongJS-MC/AI_SA-AI_OD-NAU/releases/download/v1.2.0/AIOD-Writer-Go-v1.2.exe'
+  },
+  skill: {
+    sel: '.js-dl-skill',
+    src: 'dl-src-skill',
+    link: 'rel-skill',
+    local: 'AIOD-Skills-v1.2.zip',
+    release: 'https://github.com/tengkongJS-MC/AI_SA-AI_OD-NAU/releases/download/v1.2.0/AIOD-Skills-v1.2.zip'
+  }
+};
+
+function applyDownload(key, href, label){
+  var a = ASSETS[key];
+  if (!a) return;
+  var links = document.querySelectorAll(a.sel);
+  for (var i=0;i<links.length;i++){ links[i].setAttribute('href', href); links[i].setAttribute('download', ''); }
+  var el = document.getElementById(a.src);
+  if (el) el.textContent = label;
+  var lk = document.getElementById(a.link);          // 下载区里那行「Release 直链」
+  if (lk) lk.setAttribute('href', href);
+}
+
+function initDownload(key){
+  var a = ASSETS[key];
+  if (!a) return;
+  applyDownload(key, a.release, 'GitHub Release');
+  if (!window.fetch || location.protocol === 'file:') return;   // file:// 下没法探测，直接用 Release 直链
+  fetch(a.local, { method: 'HEAD', cache: 'no-store' })
+    .then(function(r){ if (r && r.ok) applyDownload(key, a.local, '本地文件（同目录）'); })
+    .catch(function(){});
+}
+initDownload('app');
+initDownload('skill');
+
+document.getElementById('copy-sha').addEventListener('click', function(){
+  var text = document.getElementById('sha').textContent.trim(), btn = this;
+  function done(ok){ btn.textContent = ok ? '已复制' : '复制失败'; setTimeout(function(){ btn.textContent = '复制'; }, 1600); }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){ done(true); }, function(){ done(false); });
+  } else {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta); done(true);
+    } catch(e){ done(false); }
+  }
+});
+
+/* ============================================================
+   7) 界面 mockup 交互：模式 / 视图 / 生成动画 / 选中改写
+   ============================================================ */
+var MOCK = {
+  plan: {
+    fields: [
+      ['活动名称','智农院春日摄影展观众'],
+      ['活动时间','2026-03-10 08:00'],
+      ['活动地点','线上'],
+      ['活动内容','征集春日校园摄影作品'],
+      ['补充说明（可选）','语气更活泼']
+    ],
+    lines: [
+      { t:'h', s:'一、活动背景' },
+      { t:'p', s:'为丰富校园文化生活、展现我院学子的青春风采，特举办本次摄影展征集活动。',
+        alt:'为丰富校园文化生活、展现我院学子的青春风采，特举办本次摄影展征集活动——以镜头定格春日，以光影记录青春！', sel:true },
+      { t:'h', s:'二、经费预算' },
+      { t:'tbl', rows:[['科目','单价（元）','合计（元）'],['横幅','20','40'],['奖状','3','30']] }
+    ]
+  },
+  qq: {
+    fields: [
+      ['所属部门','文艺部'],
+      ['推送类型','活动预告'],
+      ['活动名称 / 主题','“春日序曲”摄影展'],
+      ['活动时间','3月10日 全天'],
+      ['活动地点','线上征集']
+    ],
+    lines: [
+      { t:'h', s:'春日序曲｜摄影展来啦' },
+      { t:'p', s:'📸 春天到了，校园里的每一帧都值得被留下。', sel:true,
+        alt:'📸 春天到了，校园里的每一帧都值得被留下——快拿起相机，把春天装进你的镜头里！' },
+      { t:'p', s:'时间：3月10日 全天' },
+      { t:'p', s:'地点：线上征集，作品发至指定邮箱' },
+      { t:'p', s:'奖励：美育学时 + 精美奖品' }
+    ]
+  },
+  wechat: {
+    fields: [
+      ['文章类型 / 板块','活动总结'],
+      ['一句话事件','我院春日摄影展圆满落幕'],
+      ['本次目的','记录过程'],
+      ['目标读者','在校生'],
+      ['已掌握素材','作品数量、获奖名单']
+    ],
+    lines: [
+      { t:'h', s:'以镜头定格春日｜我院摄影展圆满落幕' },
+      { t:'p', s:'近日，由我院团委组织部主办的春日摄影展顺利收官，共收到投稿作品 120 余件。', sel:true,
+        alt:'近日，由我院团委组织部主办的春日摄影展顺利收官，共收到投稿作品 120 余件，参与人数创历年新高。' },
+      { t:'p', s:'一幅幅作品里，有晨光里的教学楼，也有田野间的春耕。' }
+    ]
+  },
+  time: {
+    fields: [
+      ['办理类型','学时申请 · 生成申请表'],
+      ['活动分类','美育实践'],
+      ['活动名称','智农院春日摄影展观众'],
+      ['报名开始时间','2026-03-01 08:00'],
+      ['申请学时 / 积分','2 / 1']
+    ],
+    lines: [
+      { t:'h', s:'团委组织部 第二课堂活动申请' },
+      { t:'p', s:'1、活动分类：美育实践', sel:true,
+        alt:'1、活动分类：美育实践（作品经审核合格后认定学时）' },
+      { t:'p', s:'2、活动名称：智农院春日摄影展观众' },
+      { t:'p', s:'3、报名开始时间：2026-03-01 08:00' },
+      { t:'p', s:'23、申请学时数量：2　　24、申请积分数量：1' }
+    ]
+  }
+};
+
+var mockState = { mode:'plan', view:'edit', streaming:false, applied:false };
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function mdOf(lines){
+  var out = [];
+  for (var i=0;i<lines.length;i++){
+    var l = lines[i];
+    if (l.t === 'h') out.push('## ' + l.s);
+    else if (l.t === 'tbl'){
+      out.push('| ' + l.rows[0].join(' | ') + ' |');
+      var sep = [];
+      for (var c=0;c<l.rows[0].length;c++) sep.push('---');
+      out.push('| ' + sep.join(' | ') + ' |');
+      for (var r=1;r<l.rows.length;r++) out.push('| ' + l.rows[r].join(' | ') + ' |');
+    } else out.push(l.s);
+  }
+  return out.join('\n');
+}
+function plainOf(lines){
+  var out = [];
+  for (var i=0;i<lines.length;i++){
+    var l = lines[i];
+    if (l.t === 'tbl'){ for (var r=0;r<l.rows.length;r++) out.push(l.rows[r].join('　')); }
+    else out.push(l.s);
+  }
+  return out.join('\n');
+}
+function currentText(){
+  var lines = MOCK[mockState.mode].lines;
+  if (mockState.view === 'edit') return mdOf(lines);
+  if (mockState.view === 'plain') return plainOf(lines);
+  return lines.map(function(l){
+    return l.t === 'tbl' ? l.rows.map(function(r){ return r.join('  '); }).join('\n') : l.s;
+  }).join('\n');
+}
+
+function renderFields(){
+  var data = MOCK[mockState.mode], html = '';
+  for (var i=0;i<data.fields.length;i++){
+    var f = data.fields[i];
+    html += '<div class="fld" style="animation-delay:' + (i * 40) + 'ms"><label>' + esc(f[0]) + '</label><div>' + esc(f[1]) + '</div></div>';
+  }
+  document.getElementById('mockFields').innerHTML = html;
+}
+
+function renderDoc(){
+  var doc = document.getElementById('mockDoc');
+  var lines = MOCK[mockState.mode].lines;
+
+  if (mockState.view === 'edit'){ doc.innerHTML = '<pre>' + esc(mdOf(lines)) + '</pre>'; }
+  else if (mockState.view === 'plain'){ doc.innerHTML = '<pre>' + esc(plainOf(lines)) + '</pre>'; }
+  else {
+    var html = '';
+    for (var i=0;i<lines.length;i++){
+      var l = lines[i];
+      if (l.t === 'h') html += '<h4>' + esc(l.s) + '</h4>';
+      else if (l.t === 'tbl'){
+        html += '<div class="tbl">';
+        for (var r=0;r<l.rows.length;r++){
+          html += '<div class="tr">';
+          for (var c=0;c<l.rows[r].length;c++) html += '<i>' + esc(l.rows[r][c]) + '</i>';
+          html += '</div>';
+        }
+        html += '</div>';
+      } else {
+        html += '<p' + ((l.sel && !mockState.applied) ? ' class="sel"' : '') + '>' + esc(l.s) + '</p>';
+      }
+    }
+    doc.innerHTML = html;
+  }
+
+  var selLen = 0;
+  for (var k=0;k<lines.length;k++) if (lines[k].sel && !mockState.applied) selLen += (lines[k].s || '').length;
+  document.getElementById('selCount').textContent = selLen;
+  document.getElementById('mockApply').disabled = selLen === 0;
+}
+
+function streamDoc(){
+  if (mockState.streaming) return;
+  var doc = document.getElementById('mockDoc');
+  var mock = document.getElementById('mock');
+  var btn = document.getElementById('mockGen');
+  var text = currentText(), i = 0;
+  mockState.streaming = true;
+  mock.classList.add('busy');
+  btn.disabled = true;
+  doc.innerHTML = '';
+
+  var pre = document.createElement('pre');
+  var caret = document.createElement('span');
+  caret.className = 'caret';
+  doc.appendChild(pre);
+  pre.appendChild(caret);
+
+  var timer = setInterval(function(){
+    i += 3;
+    pre.textContent = text.slice(0, i);
+    pre.appendChild(caret);
+    if (i >= text.length){
+      clearInterval(timer);
+      mockState.streaming = false;
+      mock.classList.remove('busy');
+      btn.disabled = false;
+      if (caret.parentNode) caret.parentNode.removeChild(caret);
+      renderDoc();
+    }
+  }, 14);
+}
+
+document.getElementById('mockTabs').addEventListener('click', function(e){
+  var b = e.target.closest ? e.target.closest('button[data-mode]') : null;
+  if (!b) return;
+  var tabs = this.querySelectorAll('button');
+  for (var i=0;i<tabs.length;i++) tabs[i].classList.toggle('on', tabs[i] === b);
+  mockState.mode = b.getAttribute('data-mode');
+  mockState.applied = false;
+  renderFields(); renderDoc();
+});
+
+document.getElementById('mockViews').addEventListener('click', function(e){
+  var b = e.target.closest ? e.target.closest('button[data-view]') : null;
+  if (!b) return;
+  var segs = this.querySelectorAll('button');
+  for (var i=0;i<segs.length;i++) segs[i].classList.toggle('on', segs[i] === b);
+  mockState.view = b.getAttribute('data-view');
+  renderDoc();
+});
+
+document.getElementById('mockGen').addEventListener('click', function(){ streamDoc(); });
+
+document.getElementById('mockApply').addEventListener('click', function(){
+  if (mockState.applied) return;
+  var lines = MOCK[mockState.mode].lines;
+  for (var i=0;i<lines.length;i++){ if (lines[i].sel && lines[i].alt) lines[i].s = lines[i].alt; }
+  mockState.applied = true;
+  mockState.view = 'preview';
+  var segs = document.querySelectorAll('#mockViews button');
+  for (var j=0;j<segs.length;j++) segs[j].classList.toggle('on', segs[j].getAttribute('data-view') === 'preview');
+  renderDoc();
+  var ps = document.querySelectorAll('#mockDoc p');
+  for (var k=0;k<ps.length;k++) ps[k].classList.add('flash');
+});
+
+document.getElementById('mockCancel').addEventListener('click', function(){
+  var lines = MOCK[mockState.mode].lines;
+  for (var i=0;i<lines.length;i++) delete lines[i].sel;
+  renderDoc();
+});
+
+renderFields();
+renderDoc();
+
+/* ============================================================
+   8) Skill 包用法演示：把 md「拖」进 AI 聊天框（纯前端动画）
+      · 滚到该板块才播，离开就停；关掉动效时直接铺静态结果
+   ============================================================ */
+(function skillDemo(){
+  var box = document.getElementById('skillDemo');
+  if (!box) return;
+  var atts  = document.getElementById('demoAtts');
+  var ask   = document.getElementById('demoAsk');
+  var reply = document.getElementById('demoReply');
+  var ph    = document.getElementById('demoPh');
+  var send  = document.getElementById('demoSend');
+  var rows  = box.querySelectorAll('.demo-file');
+
+  var ATT = ['SKILL.md', 'references/style.md', 'references/examples.md'];
+  var QUESTION = '帮我写一条 QQ 空间推送：文艺部「春日序曲」摄影展，3 月 10 日全天线上征集作品，用活动预告的风格，短句分段。';
+  var ANSWER = '【春日序曲 · 摄影展】\n🌸 春风有信，镜头该醒了\n📅 3 月 10 日 · 全天线上征集\n🎁 美育学时 + 惊喜奖品\n📮 扫码进群，把你的春天交给我们';
+  var NOTE = '▲ 按 QQ_push_skill_v2 的「活动预告」结构生成';
+
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var timers = [], cycling = false;
+
+  function later(fn, ms){ timers.push(setTimeout(fn, ms)); }
+  function clearAll(){ for (var i=0;i<timers.length;i++) clearTimeout(timers[i]); timers = []; }
+
+  function reset(){
+    var n = box.querySelector('.demo-note');
+    if (n) n.parentNode.removeChild(n);
+    atts.innerHTML = '<span class="demo-ph">把 .md 拖到这里松手</span>';
+    atts.classList.remove('hot');
+    ask.hidden = true; ask.textContent = '';
+    reply.hidden = true; reply.textContent = '';
+    ph.textContent = '拖入文件，或直接在这里粘贴';
+    send.classList.remove('wait');
+    for (var i=0;i<rows.length;i++) rows[i].className = 'demo-file';
+  }
+
+  /* 逐字打出，末尾带光标 */
+  function typeInto(el, text, speed, done){
+    var i = 0, caret = document.createElement('span');
+    caret.className = 'caret';
+    el.hidden = false; el.textContent = '';
+    el.appendChild(caret);
+    (function step(){
+      if (i >= text.length){
+        if (caret.parentNode) caret.parentNode.removeChild(caret);
+        if (done) done();
+        return;
+      }
+      i++;
+      caret.insertAdjacentText('beforebegin', text.charAt(i - 1));
+      later(step, speed);
+    })();
+  }
+
+  /* 文件「飞」进对话框：固定定位的临时小卡片 + transform 过渡 */
+  function fly(row, label, done){
+    var a = row.getBoundingClientRect(), b = atts.getBoundingClientRect();
+    var chip = document.createElement('div');
+    chip.className = 'fly';
+    chip.innerHTML = '<span class="fi">MD</span>' + label;
+    chip.style.left = a.left + 'px';
+    chip.style.top = a.top + 'px';
+    document.body.appendChild(chip);
+    var c = chip.getBoundingClientRect();
+    var dx = b.left + 10 - c.left;
+    var dy = b.top + Math.max(0, (b.height - c.height) / 2) - c.top;
+    requestAnimationFrame(function(){
+      chip.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(.94)';
+    });
+    later(function(){ chip.style.opacity = '0'; }, 470);
+    later(function(){ if (chip.parentNode) chip.parentNode.removeChild(chip); done(); }, 620);
+  }
+
+  function addAtt(label){
+    var drop = atts.querySelector('.demo-ph');
+    if (drop) drop.parentNode.removeChild(drop);
+    var s = document.createElement('span');
+    s.className = 'att';
+    s.innerHTML = '<span class="fi">MD</span>' + label;
+    atts.appendChild(s);
+  }
+
+  function play(){
+    if (!cycling) return;
+    reset();
+    var t = 400;
+    for (var i=0;i<rows.length;i++){
+      (function(i){
+        later(function(){
+          rows[i].classList.add('on');
+          fly(rows[i], ATT[i], function(){
+            rows[i].classList.remove('on');
+            rows[i].classList.add('gone');
+            addAtt(ATT[i]);
+          });
+        }, t + i * 620);
+      })(i);
+    }
+    var after = t + rows.length * 620 + 260;
+    later(function(){ atts.classList.add('hot'); }, after - 240);
+    later(function(){ atts.classList.remove('hot'); }, after + 300);
+    later(function(){ ph.textContent = '在拖入的文件下写需求…'; typeInto(ask, QUESTION, 24, null); }, after + 140);
+
+    var askAt = after + 140 + QUESTION.length * 24 + 340;
+    later(function(){
+      reply.hidden = false;
+      reply.innerHTML = '<span class="demo-typing"><i></i><i></i><i></i></span>';
+      send.classList.add('wait');
+    }, askAt);
+
+    var ansAt = askAt + 900;
+    later(function(){
+      send.classList.remove('wait');
+      typeInto(reply, ANSWER, 30, function(){
+        var note = document.createElement('div');
+        note.className = 'demo-note';
+        note.textContent = NOTE;
+        reply.parentNode.insertBefore(note, reply.nextSibling);
+      });
+    }, ansAt);
+
+    later(play, ansAt + ANSWER.length * 30 + 3600);   // 停一会儿再来一遍
+  }
+
+  function paintStatic(){
+    reset();
+    for (var i=0;i<ATT.length;i++){ addAtt(ATT[i]); if (rows[i]) rows[i].classList.add('gone'); }
+    ask.hidden = false;  ask.textContent = QUESTION;
+    reply.hidden = false; reply.textContent = ANSWER;
+  }
+
+  function start(){
+    if (reduce) { if (!cycling) { cycling = true; paintStatic(); } return; }
+    if (cycling) return;
+    cycling = true;
+    play();
+  }
+  function stop(){ cycling = false; clearAll(); }
+
+  if (reduce){
+    start();
+  } else if ('IntersectionObserver' in window){
+    new IntersectionObserver(function(entries){
+      for (var i=0;i<entries.length;i++){
+        if (entries[i].isIntersecting) start(); else stop();
+      }
+    }, { threshold: 0.3 }).observe(box);
+  } else {
+    start();
+  }
+})();
+</script>
+</body>
+</html>

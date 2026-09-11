@@ -1,4 +1,4 @@
-# 把前端与技能文件同步到 release/go/assets（供 go:embed 内嵌）
+﻿# 把前端与技能文件同步到 release/go/assets（供 go:embed 内嵌）
 # 用法：cd release\go ; powershell -ExecutionPolicy Bypass -File .\sync-assets.ps1
 $ErrorActionPreference = 'Stop'
 
